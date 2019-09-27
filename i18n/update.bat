@@ -1,0 +1,1 @@
+pylupdate4 CutTool.pro

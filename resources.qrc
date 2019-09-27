@@ -1,0 +1,5 @@
+<RCC>
+ <qresource prefix="/plugins/CutTool">
+  <file>icons/24x24_CrossSection.png</file>
+ </qresource>
+</RCC>
