@@ -20,8 +20,9 @@ email                : brush.tyler@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
 
 from qgis.core import *
 from qgis.gui import *
@@ -52,10 +53,10 @@ class MirrorMap(QWidget):
 
         settings = QSettings()
         self.canvas.enableAntiAliasing( settings.value( "/qgis/enable_anti_aliasing", False, type=bool ))
-        self.canvas.useImageToRender( settings.value( "/qgis/use_qimage_to_render", False, type=bool ))
+        # self.canvas.useImageToRender( settings.value( "/qgis/use_qimage_to_render", False, type=bool ))
         action = settings.value( "/qgis/wheel_action", 0, type=int)
         zoomFactor = settings.value( "/qgis/zoom_factor", 2.0, type=float )
-        self.canvas.setWheelAction( QgsMapCanvas.WheelAction(action), zoomFactor )
+        # self.canvas.setWheelAction( QgsMapCanvas.WheelAction(action), zoomFactor )
         gridLayout.addWidget( self.canvas, 0, 0, 1, 7 )
 
 
@@ -67,7 +68,10 @@ class MirrorMap(QWidget):
         # QObject.connect(self.iface.mapCanvas().mapRenderer(), SIGNAL( "destinationCrsChanged()" ), self.onCrsChanged)
         # QObject.connect(self.iface.mapCanvas().mapRenderer(), SIGNAL( "mapUnitsChanged()" ), self.onCrsChanged)
         # QObject.connect(self.iface.mapCanvas().mapRenderer(), SIGNAL( "hasCrsTransformEnabled(bool)" ), self.onCrsTransformEnabled)
-        QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL( "layerWillBeRemoved(QString)" ), self.delLayer)
+
+        # QObject.connect(QgsMapLayerRegistry.instance(), SIGNAL( "layerWillBeRemoved(QString)" ), self.delLayer)
+        QgsProject.instance().layerWillBeRemoved.connect(self.delLayer)
+
         # if QGis.QGIS_VERSION_INT >= 20400:
         #     self.iface.layerTreeView().selectionModel().selectionChanged.connect(self.refreshLayerButtons)
         # else:
@@ -77,13 +81,13 @@ class MirrorMap(QWidget):
 
         self.onExtentsChanged()
         self.onCrsChanged()
-        self.onCrsTransformEnabled( self.iface.mapCanvas().hasCrsTransformEnabled() )
 
     def toggleRender(self, enabled):
         self.canvas.setRenderFlag( enabled )
 
     def cleaning(self):
-        QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.delLayer)
+        # QObject.disconnect(QgsMapLayerRegistry.instance(), SIGNAL("layerWillBeRemoved(QString)"), self.delLayer)
+        QgsProject.instance().layerWillBeRemoved.disconnect(self.delLayer)
 
     def onExtentsChanged(self):
         # self.canvas.setExtent( self.iface.mapCanvas().extent() )
@@ -98,13 +102,9 @@ class MirrorMap(QWidget):
             return self.extent
 
     def onCrsChanged(self):
-        renderer = self.iface.mapCanvas().mapRenderer()
-        self.canvas.mapRenderer().setDestinationCrs( renderer.destinationCrs() )
-        self.canvas.mapRenderer().setMapUnits( renderer.mapUnits() )
-
-    def onCrsTransformEnabled(self, enabled):
-        self.canvas.mapRenderer().setProjectionsEnabled( enabled )
-
+        # renderer = self.iface.mapCanvas().mapRenderer()
+        self.canvas.setDestinationCrs( self.iface.mapCanvas().mapSettings().destinationCrs() )
+        # self.canvas.setMapUnits( self.iface.mapCanvas().mapUnits() )
 
     def refreshLayerButtons(self):
         has_layers_to_add = False

@@ -1,11 +1,10 @@
 [general]
 name=Geology Cut tool
-qgisMinimumVersion=2.8
-qgisMaximumVersion=3.99
+qgisMinimumVersion=3.0
 description=Plots geology cut
 about=This tool plots profile lines from raster layers or point vector layer with elevation field. Supports multiple lines as well as graph export to svg, pdf, png or csv file. Supports 3D polyline export to dxf. 
 category=Raster
-version=0.0.1
+version=0.2
 author=Based on ProfileTool
 email=viktor@gmail.com
 

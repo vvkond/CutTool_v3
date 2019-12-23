@@ -136,12 +136,12 @@ class TableViewTool(QtCore.QObject):
         mdl.setData( mdl.index(row, COL_COLOR, QModelIndex())  ,QColor(lineColour) , QtCore.Qt.BackgroundRole)
         mdl.item(row, COL_COLOR).setFlags(QtCore.Qt.NoItemFlags)
 
-        symbol = QgsFillSymbolV2.createSimple({'color': '#0000FF',
+        symbol = QgsFillSymbol.createSimple({'color': '#0000FF',
                                                'style': 'solid',
                                                'style_border': 'solid',
                                                'color_border': 'black',
                                                'width_border': '0.3'})
-        icon = QgsSymbolLayerV2Utils.symbolPreviewIcon(symbol, QSize(50, 50))
+        icon = QgsSymbolLayerUtils.symbolPreviewIcon(symbol, QSize(50, 50))
         mdl.setData(mdl.index(row, COL_BACKGROUND, QModelIndex()), symbol, QtCore.Qt.UserRole)
         mdl.setData(mdl.index(row, COL_BACKGROUND, QModelIndex()), icon, QtCore.Qt.DecorationRole)
         mdl.item(row, COL_BACKGROUND).setFlags(QtCore.Qt.NoItemFlags)
@@ -227,16 +227,16 @@ class TableViewTool(QtCore.QObject):
 
         symbol = mdl.data(mdl.index(row, COL_BACKGROUND, QModelIndex()), QtCore.Qt.UserRole)
         if not symbol:
-            symbol = QgsFillSymbolV2.createSimple({'color': '#0F00FF',
+            symbol = QgsFillSymbol.createSimple({'color': '#0F00FF',
                                           'style': 'solid',
                                           'style_border': 'solid',
                                           'color_border': 'black',
                                           'width_border': '0.3'})
 
 
-        w = QgsSymbolV2SelectorDialog(symbol, QgsStyleV2.defaultStyle(), layer)
+        w = QgsSymbolSelectorDialog(symbol, QgsStyle.defaultStyle(), layer)
         if w.exec_():
-            icon = QgsSymbolLayerV2Utils.symbolPreviewIcon(symbol, QSize(50, 50))
+            icon = QgsSymbolLayerUtils.symbolPreviewIcon(symbol, QSize(50, 50))
             mdl.setData(mdl.index(row, COL_BACKGROUND, QModelIndex()), icon, QtCore.Qt.DecorationRole)
             mdl.setData(mdl.index(row, COL_BACKGROUND, QModelIndex()), symbol, QtCore.Qt.UserRole)
 

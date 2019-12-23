@@ -353,39 +353,39 @@ class PlottingTool:
     def createPolylineStyle(self, lineLayer, model1):
         categories = []
         for i in range(0, model1.rowCount()):
-            symbol = QgsSymbolV2.defaultSymbol(lineLayer.geometryType())
+            symbol = QgsSymbol.defaultSymbol(lineLayer.geometryType())
             color = model1.item(i, COL_COLOR).data(QtCore.Qt.BackgroundRole)
             if color:
                 symbol.setColor(color)
 
             nm = model1.item(i, COL_NAME).data(QtCore.Qt.EditRole)
-            category = QgsRendererCategoryV2(i, symbol, nm)
+            category = QgsRendererCategory(i, symbol, nm)
             categories.append(category)
 
         #Rule for frame
-        symbol = QgsSymbolV2.defaultSymbol(lineLayer.geometryType())
+        symbol = QgsSymbol.defaultSymbol(lineLayer.geometryType())
         symbol.setColor(QtCore.Qt.black)
-        category = QgsRendererCategoryV2(1000, symbol, u'Frame')
+        category = QgsRendererCategory(1000, symbol, u'Frame')
         categories.append(category)
 
-        renderer = QgsCategorizedSymbolRendererV2('ID', categories)
-        lineLayer.setRendererV2(renderer)
+        renderer = QgsCategorizedSymbolRenderer('ID', categories)
+        lineLayer.setRenderer(renderer)
 
     def createPolygonStyle(self, polygonLayer, model1):
         categories = []
         for i in range(0, model1.rowCount()-1):
             ss = model1.item(i, COL_BACKGROUND).data(QtCore.Qt.UserRole)
             if not ss:
-                symbol = QgsSymbolV2.defaultSymbol(polygonLayer.geometryType())
+                symbol = QgsSymbol.defaultSymbol(polygonLayer.geometryType())
             else:
                 symbol = ss.clone()
 
-            nm = model1.item(i, COL_NAME).data(QtCore.Qt.EditRole)
-            category = QgsRendererCategoryV2(i, symbol, nm)
+            nm = model1.item(i, COL_NAME).data(Qt.EditRole)
+            category = QgsRendererCategory(i, symbol, nm)
             categories.append(category)
 
-        renderer = QgsCategorizedSymbolRendererV2('ID', categories)
-        polygonLayer.setRendererV2(renderer)
+        renderer = QgsCategorizedSymbolRenderer('ID', categories)
+        polygonLayer.setRenderer(renderer)
 
 
     def getOrCreateLayerGroup(self):
@@ -407,13 +407,13 @@ class PlottingTool:
 
     def getOrCreateCutLayer(self, wdg, layerName, fields, insertIndex = -1):
         mapCanvas = wdg.iface.mapCanvas()
-        renderer = mapCanvas.mapRenderer()
+        # renderer = mapCanvas.mapRenderer()
 
         group = self.getOrCreateLayerGroup()
         lineLayers = QgsProject.instance().mapLayersByName(layerName)
         if not lineLayers:
             lineLayer = QgsVectorLayer(fields, layerName, "memory")
-            lineLayer.setCrs(renderer.destinationCrs())
+            lineLayer.setCrs(mapCanvas.mapSettings().destinationCrs())
             QgsMapLayerRegistry.instance().addMapLayer(lineLayer, False)
             if insertIndex >= 0:
                 group.insertLayer(insertIndex, lineLayer)
@@ -667,18 +667,18 @@ class PlottingTool:
 
         categories = []
         for key in traceColors.keys():
-            symbol = QgsSymbolV2.defaultSymbol(lineLayer.geometryType())
+            symbol = QgsSymbol.defaultSymbol(lineLayer.geometryType())
             colorIndex = int(traceColors[key])
             if colorIndex in self.colorRamp:
                 symbol.setColor(self.colorRamp[colorIndex])
             else:
                 symbol.setColor(QColor(int(colorIndex)))
 
-            category = QgsRendererCategoryV2(key, symbol, key)
+            category = QgsRendererCategory(key, symbol, key)
             categories.append(category)
 
-        renderer = QgsCategorizedSymbolRendererV2('name', categories)
-        lineLayer.setRendererV2(renderer)
+        renderer = QgsCategorizedSymbolRenderer('name', categories)
+        lineLayer.setRenderer(renderer)
 
         wdg.plotCanvas.addNewLayer(lineLayer.id(), True)
 
@@ -714,18 +714,18 @@ class PlottingTool:
 
         categories = []
         for key in zoneColors.keys():
-            symbol = QgsSymbolV2.defaultSymbol(polyLayer.geometryType())
+            symbol = QgsSymbol.defaultSymbol(polyLayer.geometryType())
             colorIndex = int(zoneColors[key])
             if colorIndex in self.colorRamp:
                 symbol.setColor(self.colorRamp[colorIndex])
             else:
                 symbol.setColor(QColor(int(colorIndex)))
 
-            category = QgsRendererCategoryV2(str(key), symbol, str(key))
+            category = QgsRendererCategory(str(key), symbol, str(key))
             categories.append(category)
 
-        renderer = QgsCategorizedSymbolRendererV2('name', categories)
-        polyLayer.setRendererV2(renderer)
+        renderer = QgsCategorizedSymbolRenderer('name', categories)
+        polyLayer.setRenderer(renderer)
 
         wdg.plotCanvas.addNewLayer(polyLayer.id())
 

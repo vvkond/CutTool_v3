@@ -25,10 +25,8 @@
 
 #Qt import
 from qgis.PyQt import uic, QtCore, QtGui
-try:
-    from qgis.PyQt.QtGui import QDockWidget
-except:
-    from qgis.PyQt.QtWidgets import QDockWidget
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtWidgets import *
 
 #qgis import
 from qgis.core import *
@@ -172,7 +170,7 @@ class PTDockWidget(QDockWidget, FormClass):
         modelList = dbReader.readModelList()
         self.mModelListWidget.clear()
         for model in modelList:
-            item = QtGui.QListWidgetItem(model[1])
+            item = QListWidgetItem(model[1])
             item.setData(Qt.UserRole, model[0])
             self.mModelListWidget.addItem(item)
 

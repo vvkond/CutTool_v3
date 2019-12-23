@@ -4,8 +4,8 @@ Connesion class
 
 import json
 
-from db import Oracle, Sqlite
-from utils import StrictInit, cached_property
+from .db import Oracle, Sqlite
+from .utils import StrictInit, cached_property
 import os
 
 

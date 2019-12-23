@@ -28,32 +28,32 @@ class DbReaderBase(QtCore.QObject):
     def initDb(self):
         if self.project is None:
             self.iface.messageBar().pushMessage(self.tr("Error"),
-                self.tr(u'No current PDS project'), level=QgsMessageBar.CRITICAL)
+                self.tr(u'No current PDS project'), level=Qgis.Critical)
 
             return False
 
         connection = create_connection(self.project)
         scheme = self.project['project']
-        try:
-            self.db = connection.get_db(scheme)
-            self.tig_projections = TigProjections(db=self.db)
-            proj = self.tig_projections.get_projection(self.tig_projections.default_projection_id)
-            if proj is not None:
-                self.proj4String = 'PROJ4:' + proj.qgis_string
-                destSrc = QgsCoordinateReferenceSystem()
-                destSrc.createFromProj4(proj.qgis_string)
-                sourceCrs = QgsCoordinateReferenceSystem('epsg:4326')
-                self.xform = QgsCoordinateTransform(sourceCrs, destSrc)
+        # try:
+        self.db = connection.get_db(scheme)
+        self.tig_projections = TigProjections(db=self.db)
+        proj = self.tig_projections.get_projection(self.tig_projections.default_projection_id)
+        if proj is not None:
+            self.proj4String = 'PROJ4:' + proj.qgis_string
+            destSrc = QgsCoordinateReferenceSystem()
+            destSrc.createFromProj4(proj.qgis_string)
+            sourceCrs = QgsCoordinateReferenceSystem('epsg:4326')
+            self.xform = QgsCoordinateTransform(sourceCrs, destSrc, QgsProject.instance())
 
-                screenCrs = QgsCoordinateReferenceSystem(qgis.utils.iface.mapCanvas().mapSettings().destinationCrs())
-                self.screenXform = QgsCoordinateTransform(screenCrs, destSrc)
-                self.screenXformref = QgsCoordinateTransform(destSrc, screenCrs)
-        except Exception as e:
-            self.iface.messageBar().pushMessage(self.tr("Error"),
-                                                self.tr(u'Project projection read error {0}: {1}').format(
-                                                    scheme, str(e)),
-                                                level=QgsMessageBar.CRITICAL)
-            return False
+            screenCrs = QgsCoordinateReferenceSystem(qgis.utils.iface.mapCanvas().mapSettings().destinationCrs())
+            self.screenXform = QgsCoordinateTransform(screenCrs, destSrc, QgsProject.instance())
+            self.screenXformref = QgsCoordinateTransform(destSrc, screenCrs, QgsProject.instance())
+        # except Exception as e:
+        #     self.iface.messageBar().pushMessage(self.tr("Error"),
+        #                                         self.tr(u'Project projection read error {0}: {1}').format(
+        #                                             scheme, str(e)),
+        #                                         level=Qgis.Critical)
+        #     return False
         return True
 
     def get_sql(self, value):

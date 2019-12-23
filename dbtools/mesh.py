@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import *
-from PyQt4.QtCore import *
+from qgis.PyQt.QtCore import *
 import numpy as np
 import bisect
 import math
@@ -165,7 +165,7 @@ class TrajectoryMesh:
             numIter += 1
             if not foundIntersection or numIter > count:
                 if numIter > count:
-                    print 'limit exided'
+                    print('limit exided')
                 break
 
         bounded = QLineF.BoundedIntersection

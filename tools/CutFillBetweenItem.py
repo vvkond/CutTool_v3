@@ -9,6 +9,7 @@ from ..pyqtgraph import PlotCurveItem
 from qgis.PyQt import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
+from qgis.PyQt.QtWidgets import *
 import math
 try:
     import itertools
@@ -17,14 +18,14 @@ except:
 
 
 
-class CutFillBetweenItem(QtGui.QGraphicsPathItem):
+class CutFillBetweenItem(QGraphicsPathItem):
     def __init__(self, iface1, curve1=None, curve2=None, symbol = None):
-        QtGui.QGraphicsPathItem.__init__(self)
+        QGraphicsPathItem.__init__(self)
 
         if symbol:
             self.mShapeStyleSymbol = symbol.clone()
         else:
-            self.mShapeStyleSymbol = QgsFillSymbolV2.createSimple({'color': '#0F00FF',
+            self.mShapeStyleSymbol = QgsFillSymbol.createSimple({'color': '#0F00FF',
                                                                'style': 'solid',
                                                                'style_border': 'solid',
                                                                'color_border': 'black',
@@ -75,10 +76,10 @@ class CutFillBetweenItem(QtGui.QGraphicsPathItem):
         painter.restore()
 
     def setBrush(self, *args, **kwds):
-        QtGui.QGraphicsPathItem.setBrush(self, fn.mkBrush(*args, **kwds))
+        QGraphicsPathItem.setBrush(self, fn.mkBrush(*args, **kwds))
 
     def setPen(self, *args, **kwds):
-        QtGui.QGraphicsPathItem.setPen(self, fn.mkPen(*args, **kwds))
+        QGraphicsPathItem.setPen(self, fn.mkPen(*args, **kwds))
 
     def setCurves(self, curve1, curve2):
         """Set the curves to fill between.
@@ -106,7 +107,7 @@ class CutFillBetweenItem(QtGui.QGraphicsPathItem):
 
     def setBrush(self, *args, **kwds):
         """Change the fill brush. Acceps the same arguments as pg.mkBrush()"""
-        QtGui.QGraphicsPathItem.setBrush(self, fn.mkBrush(*args, **kwds))
+        QGraphicsPathItem.setBrush(self, fn.mkBrush(*args, **kwds))
 
     def curveChanged(self):
         self.updatePath()

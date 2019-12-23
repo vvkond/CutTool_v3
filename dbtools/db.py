@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import total_ordering
-from itertools import izip
-from os import environ, path
+# from itertools import izip
+from os import environ,path
 from os.path import abspath
 from time import sleep
 import logging
@@ -12,16 +12,15 @@ environ['NLS_LANG'] = '.AL32UTF8'
 import sys
 sys.path.append(str(path.join(
                                 path.dirname(path.abspath(__file__))
-                                ,r"libs\x86_64" if sys.maxsize > 2**32 else r"libs\i386"
-                            )))
+                                ,r"libs\x86_64" if sys.maxsize > 2**32 else r"libs\i386" 
+                            )))                            
 import cx_Oracle
-
 
 
 @total_ordering
 class Expando(object):
     def __init__(self, names, row):
-        self.__dict__.update(izip(names, row))
+        self.__dict__.update(zip(names, row))
 
     def __repr__(self):
         return repr(self.__dict__)
@@ -93,8 +92,8 @@ class Base(object):
 
     def execute_fn(self, fn, sql, *args, **kwargs):
         cursor = self.execute(sql, *args, **kwargs)
-        names = zip(*cursor.description)[0]
-        #names = [desc[0] for desc in cursor.description]
+        # names = zip(*cursor.description)[0]
+        names = [desc[0] for desc in cursor.description]
         for row in cursor:
             yield fn(names, row)
 
@@ -156,6 +155,7 @@ class Oracle(Base):
 
         self.schema = schema
         self._connection = None if lazy_connect else self._connect()
+        self._cached_cursors={}
 
     @classmethod
     def _make_server(cls, server, host, port, sid):
@@ -191,10 +191,13 @@ class Oracle(Base):
         if self.schema is not None:
             cursor = connection.cursor()
             cursor.execute('alter session set current_schema=%s' % self.schema)
+        self._cached_cursors={}
         return connection
 
     def cursor(self):
-        return self.connection.cursor()
+        cur=self.connection.cursor()
+        cur.arraysize=1000
+        return cur
 
     def blobToString(self, blob, offset=1):
         return blob.read(offset)
@@ -225,17 +228,24 @@ class Oracle(Base):
     ])
 
     def _is_reconnect_exception(self, e):
+        self._cached_cursors={}
         if not hasattr(e.args[0], 'code'):
             return False
         code = e.args[0].code
         return code in self._reconnection_exception_codes
 
-    def _execute(self, sql, **kwargs):
-        kwargs = {k.encode('ascii'): v.encode('ascii') if isinstance(v, unicode) else v for k, v in kwargs.iteritems()}
+    def _execute(self, sql, cursor_id=None,**kwargs):
+        # kwargs = {k.encode('utf-8'): v.encode('utf-8') if isinstance(v, unicode) else v for k, v in kwargs.items()}
+        kwargs = {k: v for k, v in kwargs.items()}
         attempts = 2
         while attempts > 0:
             attempts -= 1
-            cursor = self.cursor()
+            if cursor_id is not None and cursor_id in self._cached_cursors.keys():
+                cursor=self._cached_cursors[cursor_id]
+            else:
+                cursor = self.cursor()
+                if cursor_id is not None:
+                    self._cached_cursors[cursor_id]=cursor
             try:
                 cursor.execute(sql, kwargs)
                 return cursor

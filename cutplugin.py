@@ -84,8 +84,8 @@ class CutPlugin:
         self.iface.addPluginToMenu("&Geology cut Tool", self.action)
         self.iface.addPluginToMenu("&Geology cut Tool", self.aboutAction)
 
-        QObject.connect(self.iface, SIGNAL("projectRead()"), self.onProjectLoaded)
-        QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"), self.onWriteProject)
+        # QObject.connect(self.iface, SIGNAL("projectRead()"), self.onProjectLoaded)
+        # QObject.connect(QgsProject.instance(), SIGNAL("writeProject(QDomDocument &)"), self.onWriteProject)
 
     def tr(self, message):
         return QCoreApplication.translate('CutTools', message)
@@ -138,7 +138,7 @@ class CutPlugin:
         DlgAbout(self.iface.mainWindow()).exec_()
 
     def onProjectLoaded(self):
-        print 'Project read'
+        print('Project read')
 
     def onWriteProject(self, domproject):
-        print 'Write project'
+        print('Write project')

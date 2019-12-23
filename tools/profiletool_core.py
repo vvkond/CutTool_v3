@@ -540,7 +540,7 @@ class ProfileToolCore(QWidget):
                     else:
                         pointprojected = points[0]
                 except (IndexError, AttributeError):
-                    print 'Error'
+                    print('Error')
                     pointprojected = None
 
                 if pointprojected:
@@ -755,7 +755,7 @@ class ProfileToolCore(QWidget):
         if not symbol:
             return ''
         doc = QtXml.QDomDocument()
-        styleEl = QgsSymbolLayerV2Utils.saveSymbol('Background', symbol, doc)
+        styleEl = QgsSymbolLayerUtils.saveSymbol('Background', symbol, doc)
         doc.appendChild(styleEl)
         return doc.toString()
 
@@ -763,7 +763,7 @@ class ProfileToolCore(QWidget):
         doc = QtXml.QDomDocument()
         if doc.setContent(symbolXml):
             el = doc.documentElement()
-            return QgsSymbolLayerV2Utils.loadSymbol(el)
+            return QgsSymbolLayerUtils.loadSymbol(el)
 
         return None
 
@@ -807,12 +807,12 @@ class ProfileToolCore(QWidget):
                     symbolXml = str(row['backColor'])
                     symbol = self.stringToSymbol(symbolXml)
                     if not symbol:
-                        symbol = QgsFillSymbolV2.createSimple({'color': '#0000FF',
+                        symbol = QgsFillSymbol.createSimple({'color': '#0000FF',
                                                                'style': 'solid',
                                                                'style_border': 'solid',
                                                                'color_border': 'black',
                                                                'width_border': '0.3'})
-                    icon = QgsSymbolLayerV2Utils.symbolPreviewIcon(symbol, QtCore.QSize(50, 50))
+                    icon = QgsSymbolLayerUtils.symbolPreviewIcon(symbol, QtCore.QSize(50, 50))
                     mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), symbol, QtCore.Qt.UserRole)
                     mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
                     mdl.setData(mdl.index(r, COL_NAME, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
