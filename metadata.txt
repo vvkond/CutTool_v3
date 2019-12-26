@@ -1,14 +1,22 @@
+# This file contains metadata for your plugin. Since
+# version 2.0 of QGIS this is the proper way to supply
+# information about a plugin. The old method of
+# embedding metadata in __init__.py will
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
 [general]
 name=Geology Cut tool
 qgisMinimumVersion=3.0
 description=Plots geology cut
 about=This tool plots profile lines from raster layers or point vector layer with elevation field. Supports multiple lines as well as graph export to svg, pdf, png or csv file. Supports 3D polyline export to dxf. 
 category=Raster
-version=0.2
+version=1.0
 author=Based on ProfileTool
 email=viktor@gmail.com
 
-tags=raster, vector, profile
+tags=PUMA+
 
 homepage=https://github.com/vvkond/CutTool
 tracker=https://github.com/vvkond/CutTool/issues

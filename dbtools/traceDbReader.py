@@ -68,7 +68,7 @@ class TracesDbReader(DbReaderBase):
                     depth = numpy.fromstring(self.db.blobToString(row[7]), '>f').astype('d')
                 else:
                     step = (bot-top)/(count - 1)
-                    depth = [top+i*step for i in xrange(count)]
+                    depth = [top+i*step for i in range(count)]
 
                 logTrace = [pt for pt in zip(depth, values)]
                 if len(logTrace):

@@ -222,11 +222,11 @@ class MirrorMap(QWidget):
 
     def _updateCanvasLayers(self):
         canvas_layers = []
-        for l in self.iface.legendInterface().layers():
-            if l.id() in self.layers:
-                canvas_layers.append(QgsMapCanvasLayer(l))
+        for layerId in QgsProject.instance().mapLayers():
+            if layerId in self.layers:
+                canvas_layers.append(QgsProject.instance().mapLayer(layerId))
 
-        self.canvas.setLayerSet(canvas_layers)
+        self.canvas.setLayers(canvas_layers)
 
         # self.refreshLayerButtons()
         self._updateExtent()
@@ -235,7 +235,7 @@ class MirrorMap(QWidget):
         self.extent = None
         for id in self.getLayerSet():
             if id not in self.layersOutExtent:
-                layer = QgsMapLayerRegistry.instance().mapLayer(id)
+                layer = QgsProject.instance().mapLayer(id)
                 if layer:
                     ext = layer.extent()
                     if not ext.isNull():

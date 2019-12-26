@@ -236,11 +236,9 @@ class ProfileToolCore(QWidget):
         for i in range(0, self.dockwidget.mdl.rowCount()):
             if self.dockwidget.mdl.item(i, COL_LAYER).data(
                     QtCore.Qt.EditRole).type() == qgis.core.QgsMapLayer.VectorLayer:
-                _, buffer, multipoly = DataReaderTool().dataVectorReaderTool(self.iface, self.toolrenderer.tool,
-                                                                             self.profiles[i], self.pointstoDraw,
-                                                                             float(self.dockwidget.mdl.item(i,
-                                                                                                            COL_BUFFER).data(
-                                                                                 QtCore.Qt.EditRole)))
+                _, buffer, multipoly = DataReaderTool().dataVectorReaderTool(
+                    self.iface, self.toolrenderer.tool,
+                    self.profiles[i], self.pointstoDraw,float(self.dockwidget.mdl.item(i,COL_BUFFER).data(QtCore.Qt.EditRole)))
                 geoms.append(buffer)
                 geoms.append(multipoly)
 
@@ -755,7 +753,7 @@ class ProfileToolCore(QWidget):
         if not symbol:
             return ''
         doc = QtXml.QDomDocument()
-        styleEl = QgsSymbolLayerUtils.saveSymbol('Background', symbol, doc)
+        styleEl = QgsSymbolLayerUtils.saveSymbol('Background', symbol, doc, QgsReadWriteContext())
         doc.appendChild(styleEl)
         return doc.toString()
 
@@ -763,7 +761,7 @@ class ProfileToolCore(QWidget):
         doc = QtXml.QDomDocument()
         if doc.setContent(symbolXml):
             el = doc.documentElement()
-            return QgsSymbolLayerUtils.loadSymbol(el)
+            return QgsSymbolLayerUtils.loadSymbol(el, QgsReadWriteContext())
 
         return None
 
@@ -771,64 +769,65 @@ class ProfileToolCore(QWidget):
         proj = QgsProject.instance()
         cutDefStr = proj.readEntry("CutPlugin", "GeologyCut", "[]")[0]
         pointsStr = proj.readEntry("CutPlugin", "PointToDraw", '[]')[0]
+        print(cutDefStr, pointsStr)
 
         self.dockwidget.blockAllSignals(True)
 
-        try:
-            self.dockwidget.mXyAspectRatio.setValue(float(proj.readEntry("CutPlugin", "XyAspectRatio", '1.0')[0]))
-            self.dockwidget.plotComboBox.setCurrentIndex(int(proj.readEntry("CutPlugin", "plotIndex", '0')[0]))
-            self.dockwidget.comboBox.setCurrentIndex(int(proj.readEntry("CutPlugin", "comboBox", '0')[0]))
-            self.dockwidget.mWellDistance.setValue(float(proj.readEntry("CutPlugin", "distanceToWell", '50')[0]))
-            self.dockwidget.wellTopDepthEdit.setValue(float(proj.readEntry("CutPlugin", "wellTopDepth", '-9999')[0]))
-            self.dockwidget.wellBottomDepthEdit.setValue(
-                float(proj.readEntry("CutPlugin", "wellBottomDepth", '-9999')[0]))
-            self.dockwidget.currentTemplateId = int(proj.readEntry("CutPlugin", "currentTemplateId", "-1")[0])
-            self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[
-                                                      0] == 'True'
-            self.dockwidget.trackWidth = int(proj.readEntry("CutPlugin", "trackWidth", '10')[0])
+        # try:
+        self.dockwidget.mXyAspectRatio.setValue(float(proj.readEntry("CutPlugin", "XyAspectRatio", '1.0')[0]))
+        self.dockwidget.plotComboBox.setCurrentIndex(int(proj.readEntry("CutPlugin", "plotIndex", '0')[0]))
+        self.dockwidget.comboBox.setCurrentIndex(int(proj.readEntry("CutPlugin", "comboBox", '0')[0]))
+        self.dockwidget.mWellDistance.setValue(float(proj.readEntry("CutPlugin", "distanceToWell", '50')[0]))
+        self.dockwidget.wellTopDepthEdit.setValue(float(proj.readEntry("CutPlugin", "wellTopDepth", '-9999')[0]))
+        self.dockwidget.wellBottomDepthEdit.setValue(
+            float(proj.readEntry("CutPlugin", "wellBottomDepth", '-9999')[0]))
+        self.dockwidget.currentTemplateId = int(proj.readEntry("CutPlugin", "currentTemplateId", "-1")[0])
+        self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[
+                                                  0] == 'True'
+        self.dockwidget.trackWidth = int(proj.readEntry("CutPlugin", "trackWidth", '10')[0])
 
-            cutDefs = ast.literal_eval(cutDefStr)
+        cutDefs = ast.literal_eval(cutDefStr)
 
-            self.dockwidget.tableViewTool.blockSignals(True)
+        self.dockwidget.tableViewTool.blockSignals(True)
 
-            reg = QgsMapLayerRegistry.instance()
-            for row in cutDefs:
-                layer = reg.mapLayer(row['id'])
-                if layer:
-                    self.dockwidget.addLayer(layer)
+        reg = QgsProject.instance()
+        for row in cutDefs:
+            layer = reg.mapLayer(row['id'])
+            if layer:
+                self.dockwidget.addLayer(layer)
 
-                    mdl = self.dockwidget.mdl
-                    r = mdl.rowCount() - 1
-                    mdl.setData(mdl.index(r, COL_VISIBLE, QtCore.QModelIndex()), bool(row['selected']),
-                                QtCore.Qt.CheckStateRole)
-                    mdl.setData(mdl.index(r, COL_COLOR, QtCore.QModelIndex()), QtGui.QColor(row['color']),
-                                QtCore.Qt.BackgroundRole)
+                mdl = self.dockwidget.mdl
+                r = mdl.rowCount() - 1
+                mdl.setData(mdl.index(r, COL_VISIBLE, QtCore.QModelIndex()), bool(row['selected']),
+                            QtCore.Qt.CheckStateRole)
+                mdl.setData(mdl.index(r, COL_COLOR, QtCore.QModelIndex()), QtGui.QColor(row['color']),
+                            QtCore.Qt.BackgroundRole)
 
-                    symbolXml = str(row['backColor'])
-                    symbol = self.stringToSymbol(symbolXml)
-                    if not symbol:
-                        symbol = QgsFillSymbol.createSimple({'color': '#0000FF',
-                                                               'style': 'solid',
-                                                               'style_border': 'solid',
-                                                               'color_border': 'black',
-                                                               'width_border': '0.3'})
-                    icon = QgsSymbolLayerUtils.symbolPreviewIcon(symbol, QtCore.QSize(50, 50))
-                    mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), symbol, QtCore.Qt.UserRole)
-                    mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
-                    mdl.setData(mdl.index(r, COL_NAME, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
+                symbolXml = str(row['backColor'])
+                symbol = self.stringToSymbol(symbolXml)
+                if not symbol:
+                    symbol = QgsFillSymbol.createSimple({'color': '#0000FF',
+                                                           'style': 'solid',
+                                                           'style_border': 'solid',
+                                                           'color_border': 'black',
+                                                           'width_border': '0.3'})
+                icon = QgsSymbolLayerUtils.symbolPreviewIcon(symbol, QtCore.QSize(50, 50))
+                mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), symbol, QtCore.Qt.UserRole)
+                mdl.setData(mdl.index(r, COL_BACKGROUND, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
+                mdl.setData(mdl.index(r, COL_NAME, QtCore.QModelIndex()), icon, QtCore.Qt.DecorationRole)
 
-            self.pointstoDraw = ast.literal_eval(pointsStr)
+        self.pointstoDraw = ast.literal_eval(pointsStr)
 
-            if len(self.pointstoDraw):
-                self.isInitialised = True
-                PlottingTool().addAllLayers(self.dockwidget)
-                # self.updateProfil(self.pointstoDraw, False, True)
-                # self.updateWells()
+        if len(self.pointstoDraw):
+            self.isInitialised = True
+            PlottingTool().addAllLayers(self.dockwidget)
+            # self.updateProfil(self.pointstoDraw, False, True)
+            # self.updateWells()
 
-                self.toolrenderer.setPointsToDraw(self.pointstoDraw)
+            self.toolrenderer.setPointsToDraw(self.pointstoDraw)
 
-        except Exception as e:
-            QgsMessageLog.logMessage(u"Cut restore error: {0}".format(str(e)), tag="CutPlugin")
+        # except Exception as e:
+        #     QgsMessageLog.logMessage(u"Cut restore error: {0}".format(str(e)), tag="CutPlugin")
 
         self.dockwidget.tableViewTool.blockSignals(False)
         self.isInitialised = True

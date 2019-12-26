@@ -79,7 +79,7 @@ class TemplatesDbReader(DbReaderBase):
             #Треки
             daks = root.elementsByTagName('GPT_DAK')
             if daks:
-                for i in xrange(daks.count()):
+                for i in range(daks.count()):
                     track = {}
 
                     item = daks.at(i).toElement()
@@ -90,7 +90,7 @@ class TemplatesDbReader(DbReaderBase):
 
                     twds = item.elementsByTagName('GPA_TWD')
                     if twds:
-                        for ii in xrange(twds.count()):
+                        for ii in range(twds.count()):
                             twd = twds.at(ii).toElement()
                             if twd.hasAttribute('Normalized'):
                                 track['width'] = float(twd.attribute('Normalized'))
@@ -99,7 +99,7 @@ class TemplatesDbReader(DbReaderBase):
                     trcs = item.elementsByTagName('GPT_TRC')
                     if trcs:
                         traces = []
-                        for ii in xrange(trcs.count()):
+                        for ii in range(trcs.count()):
                             trc = trcs.at(ii).toElement()
                             trace = {}
                             if trc.hasAttribute('Name'):
@@ -118,7 +118,7 @@ class TemplatesDbReader(DbReaderBase):
                             #Масштабы кривой
                             items = trc.elementsByTagName('GPA_HSC')
                             if items:
-                                for jj in xrange(items.count()):
+                                for jj in range(items.count()):
                                     item = items.at(jj).toElement()
                                     if item.hasAttribute('ScaleType'):
                                         trace['scaleType'] = int(item.attribute('ScaleType')) - 1
@@ -130,7 +130,7 @@ class TemplatesDbReader(DbReaderBase):
                             #Стиль отрисовки кривой
                             items = trc.elementsByTagName('GPA_GFN')
                             if items:
-                                for jj in xrange(items.count()):
+                                for jj in range(items.count()):
                                     item = items.at(jj).toElement()
                                     if item.hasAttribute('Colour'):
                                         trace['color'] = int(item.attribute('Colour'))
@@ -148,7 +148,7 @@ class TemplatesDbReader(DbReaderBase):
                     zons = item.elementsByTagName('GPT_ZON')
                     if zons:
                         zonations = []
-                        for ii in xrange(zons.count()):
+                        for ii in range(zons.count()):
                             zn = zons.at(ii).toElement()
                             zone = {}
                             if zn.hasAttribute('Type'):

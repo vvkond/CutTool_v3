@@ -225,57 +225,57 @@ class PTDockWidget(QDockWidget, FormClass):
             self.plotCanvas = MirrorMap(self.frame_for_plot, self.iface)
             layout.addWidget(self.plotCanvas)
 
-        if library == "PyQtGraph":
-            self.stackedWidget.setCurrentIndex(0)
-            self.plotWdg = PlottingTool().changePlotWidget("PyQtGraph", self.frame_for_plot)
-            # layout.addWidget(self.plotWdg)
-            self.TYPE = "PyQtGraph"
-            self.cbxSaveAs.clear()
-            self.cbxSaveAs.addItems(['Graph - PNG','Graph - SVG','3D line - DXF'])
-
-        elif library == "Qwt5":
-            self.stackedWidget.setCurrentIndex(0)
-            widget1 = self.stackedWidget.widget(1)
-            if widget1:
-                self.stackedWidget.removeWidget( widget1 )
-                widget1 = None
-            self.widget_save_buttons.setVisible( True )
-            self.plotWdg = PlottingTool().changePlotWidget("Qwt5", self.frame_for_plot)
-            # layout.addWidget(self.plotWdg)
-
-            if QT_VERSION < 0X040100:
-                idx = self.cbxSaveAs.model().index(0, 0)
-                self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
-                self.cbxSaveAs.setCurrentIndex(1)
-            if QT_VERSION < 0X040300:
-                idx = self.cbxSaveAs.model().index(1, 0)
-                self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
-                self.cbxSaveAs.setCurrentIndex(2)
-            self.TYPE = "Qwt5"
-
-        elif library == "Matplotlib":
-            self.stackedWidget.setCurrentIndex(0)
-            #self.widget_save_buttons.setVisible( False )
-            self.plotWdg = PlottingTool().changePlotWidget("Matplotlib", self.frame_for_plot)
-            # layout.addWidget(self.plotWdg)
-
-            if int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 4 :
-                #from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-                mpltoolbar = matplotlib.backends.backend_qt4agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
-                #layout.addWidget( mpltoolbar )
-                self.stackedWidget.insertWidget(1, mpltoolbar)
-                self.stackedWidget.setCurrentIndex(1)
-                lstActions = mpltoolbar.actions()
-                mpltoolbar.removeAction( lstActions[ 7 ] )
-                mpltoolbar.removeAction( lstActions[ 8 ] )
-
-            elif int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 5 :
-                #from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-                #mpltoolbar = matplotlib.backends.backend_qt5agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
-                pass
-            self.TYPE = "Matplotlib"
-            self.cbxSaveAs.clear()
-            self.cbxSaveAs.addItems(['Graph - PDF','Graph - PNG','Graph - SVG','Graph - print (PS)','3D line - DXF'])
+        # if library == "PyQtGraph":
+        #     self.stackedWidget.setCurrentIndex(0)
+        #     self.plotWdg = PlottingTool().changePlotWidget("PyQtGraph", self.frame_for_plot)
+        #     # layout.addWidget(self.plotWdg)
+        #     self.TYPE = "PyQtGraph"
+        #     self.cbxSaveAs.clear()
+        #     self.cbxSaveAs.addItems(['Graph - PNG','Graph - SVG','3D line - DXF'])
+        #
+        # elif library == "Qwt5":
+        #     self.stackedWidget.setCurrentIndex(0)
+        #     widget1 = self.stackedWidget.widget(1)
+        #     if widget1:
+        #         self.stackedWidget.removeWidget( widget1 )
+        #         widget1 = None
+        #     self.widget_save_buttons.setVisible( True )
+        #     self.plotWdg = PlottingTool().changePlotWidget("Qwt5", self.frame_for_plot)
+        #     # layout.addWidget(self.plotWdg)
+        #
+        #     if QT_VERSION < 0X040100:
+        #         idx = self.cbxSaveAs.model().index(0, 0)
+        #         self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
+        #         self.cbxSaveAs.setCurrentIndex(1)
+        #     if QT_VERSION < 0X040300:
+        #         idx = self.cbxSaveAs.model().index(1, 0)
+        #         self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
+        #         self.cbxSaveAs.setCurrentIndex(2)
+        #     self.TYPE = "Qwt5"
+        #
+        # elif library == "Matplotlib":
+        #     self.stackedWidget.setCurrentIndex(0)
+        #     #self.widget_save_buttons.setVisible( False )
+        #     self.plotWdg = PlottingTool().changePlotWidget("Matplotlib", self.frame_for_plot)
+        #     # layout.addWidget(self.plotWdg)
+        #
+        #     if int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 4 :
+        #         #from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
+        #         mpltoolbar = matplotlib.backends.backend_qt4agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
+        #         #layout.addWidget( mpltoolbar )
+        #         self.stackedWidget.insertWidget(1, mpltoolbar)
+        #         self.stackedWidget.setCurrentIndex(1)
+        #         lstActions = mpltoolbar.actions()
+        #         mpltoolbar.removeAction( lstActions[ 7 ] )
+        #         mpltoolbar.removeAction( lstActions[ 8 ] )
+        #
+        #     elif int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 5 :
+        #         #from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+        #         #mpltoolbar = matplotlib.backends.backend_qt5agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
+        #         pass
+        #     self.TYPE = "Matplotlib"
+        #     self.cbxSaveAs.clear()
+        #     self.cbxSaveAs.addItems(['Graph - PDF','Graph - PNG','Graph - SVG','Graph - print (PS)','3D line - DXF'])
 
     # ********************************************************************************
     # properties ****************************************************************
@@ -437,45 +437,47 @@ class PTDockWidget(QDockWidget, FormClass):
         self.trackWidthSpinBox.blockSignals(val)
 
     def invertY(self, isInvert):
-        if self.plotlibrary == 'PyQtGraph':
-            self.plotWdg.getViewBox().invertY(isInvert)
+        pass
+        # if self.plotlibrary == 'PyQtGraph':
+        #     self.plotWdg.getViewBox().invertY(isInvert)
 
     def showCursor(self,int1):
+        pass
         #For pyqtgraph mode
-        if self.plotlibrary == 'PyQtGraph':
-            if int1 == 2 :
-                self.showcursor = True
-                self.profiletoolcore.doTracking = bool(self.checkBox_mpl_tracking.checkState() )
-                self.checkBox_mpl_tracking.setEnabled(True)
-                for item in self.plotWdg.allChildItems():
-                    if str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>":
-                        if item.name() == 'cross_vertical':
-                            item.show()
-                        elif item.name() == 'cross_horizontal':
-                            item.show()
-                    elif str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>":
-                        if item.textItem.toPlainText()[0] == 'X':
-                            item.show()
-                        elif item.textItem.toPlainText()[0] == 'Y':
-                            item.show()
-            elif int1 == 0 :
-                self.showcursor = False
-                self.profiletoolcore.doTracking = False
-                self.checkBox_mpl_tracking.setEnabled(False)
-
-
-                for item in self.plotWdg.allChildItems():
-                    if str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>":
-                        if item.name() == 'cross_vertical':
-                            item.hide()
-                        elif item.name() == 'cross_horizontal':
-                            item.hide()
-                    elif str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>":
-                        if item.textItem.toPlainText()[0] == 'X':
-                            item.hide()
-                        elif item.textItem.toPlainText()[0] == 'Y':
-                            item.hide()
-            self.profiletoolcore.plotProfil()
+        # if self.plotlibrary == 'PyQtGraph':
+        #     if int1 == 2 :
+        #         self.showcursor = True
+        #         self.profiletoolcore.doTracking = bool(self.checkBox_mpl_tracking.checkState() )
+        #         self.checkBox_mpl_tracking.setEnabled(True)
+        #         for item in self.plotWdg.allChildItems():
+        #             if str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>":
+        #                 if item.name() == 'cross_vertical':
+        #                     item.show()
+        #                 elif item.name() == 'cross_horizontal':
+        #                     item.show()
+        #             elif str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>":
+        #                 if item.textItem.toPlainText()[0] == 'X':
+        #                     item.show()
+        #                 elif item.textItem.toPlainText()[0] == 'Y':
+        #                     item.show()
+        #     elif int1 == 0 :
+        #         self.showcursor = False
+        #         self.profiletoolcore.doTracking = False
+        #         self.checkBox_mpl_tracking.setEnabled(False)
+        #
+        #
+        #         for item in self.plotWdg.allChildItems():
+        #             if str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.InfiniteLine.InfiniteLine'>":
+        #                 if item.name() == 'cross_vertical':
+        #                     item.hide()
+        #                 elif item.name() == 'cross_horizontal':
+        #                     item.hide()
+        #             elif str(type(item)) == "<class 'profiletool.pyqtgraph.graphicsItems.TextItem.TextItem'>":
+        #                 if item.textItem.toPlainText()[0] == 'X':
+        #                     item.hide()
+        #                 elif item.textItem.toPlainText()[0] == 'Y':
+        #                     item.hide()
+        #     self.profiletoolcore.plotProfil()
 
     #********************************************************************************
     #tablebiew things ****************************************************************
@@ -681,7 +683,7 @@ class PTDockWidget(QDockWidget, FormClass):
 
             fet = QgsFeature(vl.fields())
             #set geometry
-            fet.setGeometry(QgsGeometry.fromPoint(QgsPoint(self.profiletoolcore.profiles[nr]['x'][i],self.profiletoolcore.profiles[nr]['y'][i])))
+            fet.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(self.profiletoolcore.profiles[nr]['x'][i],self.profiletoolcore.profiles[nr]['y'][i])))
             #set attributes
             fet.setAttributes( [self.profiletoolcore.profiles[nr]["z"][i]] )
             pr.addFeatures([fet])

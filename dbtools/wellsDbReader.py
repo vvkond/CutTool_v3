@@ -64,7 +64,7 @@ class WellsDbReader(DbReaderBase):
             else:
                 elev = 0.0
             if lng and lat:
-                pt = QgsPoint(lng, lat)
+                pt = QgsPointXY(lng, lat)
 
                 if self.xform:
                     pt = self.xform.transform(pt)
@@ -79,7 +79,7 @@ class WellsDbReader(DbReaderBase):
                 blob_y = numpy.fromstring(self.db.blobToString(row[22]), '>f').astype('d')
                 blob_z = numpy.fromstring(self.db.blobToString(row[23]), '>f').astype('d')
                 blob_md = numpy.fromstring(self.db.blobToString(row[24]), '>f').astype('d')
-                for ip in xrange(len(blob_x)):
+                for ip in range(len(blob_x)):
                     dx = blob_x[ip]
                     dy = blob_y[ip]
                     z = blob_z[ip] - elev
@@ -88,10 +88,10 @@ class WellsDbReader(DbReaderBase):
                     polyLine.append(pt3)
 
                 if len(polyLine) > 1:
-                    minDist = min(geominlayercrs.closestSegmentWithContext(QgsPoint(pt[0], pt[1])) for pt in polyLine)
+                    minDist = min(geominlayercrs.closestSegmentWithContext(QgsPointXY(pt[0], pt[1])) for pt in polyLine)
 
                     if minDist[0] <= dist:
-                        trajectory = [(interpolate(QgsPoint(pt[0], pt[1]))*aspect, pt[2], pt[3]) for pt in polyLine if checkPoint(pt[2])]
+                        trajectory = [(interpolate(QgsPointXY(pt[0], pt[1]))*aspect, pt[2], pt[3]) for pt in polyLine if checkPoint(pt[2])]
                         trajectory = self.simplify(trajectory, 0.001)
                         if len(trajectory):
                             wellsOnProfile.append( (name, wellId, trajectory) )

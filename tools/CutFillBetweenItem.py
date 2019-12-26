@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ..pyqtgraph.Qt import QtGui, USE_PYQT5, USE_PYQT4, USE_PYSIDE
-from ..pyqtgraph import functions as fn
-from ..pyqtgraph import PlotDataItem
-from ..pyqtgraph import PlotCurveItem
+# from ..pyqtgraph.Qt import QtGui, USE_PYQT5, USE_PYQT4, USE_PYSIDE
+# from ..pyqtgraph import functions as fn
+# from ..pyqtgraph import PlotDataItem
+# from ..pyqtgraph import PlotCurveItem
 
 #Qt import
 from qgis.PyQt import QtCore, QtGui

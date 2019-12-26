@@ -73,7 +73,7 @@ class TrajectoryMesh:
 
         startTime = time.time()
         startI = 0
-        for i in xrange(1, len(polyline)):
+        for i in range(1, len(polyline)):
             x1,y1, x2, y2 = polyline[startI][0], polyline[startI][1], polyline[i][0], polyline[i][1]
             seg = QLineF(x1, y1, x2, y2)
             length = seg.length()
@@ -93,7 +93,7 @@ class TrajectoryMesh:
 
         self.throwOutRings(rightParts, segments, miterLimit)
         if distance > 0:
-            for i in xrange(len(segments)):
+            for i in range(len(segments)):
                 if i > 0:
                     if rightParts[i-1].p2() != rightParts[i].p1():
                         theMesh.append( ((segments[i-1].p2().x(),   segments[i-1].p2().y()),
@@ -107,7 +107,7 @@ class TrajectoryMesh:
                                 (rightParts[i].p2().x(),    rightParts[i].p2().y()),
                                 (md[i][0], md[i][1])))
         else:
-            for i in xrange(len(segments)):
+            for i in range(len(segments)):
                 if i > 0:
                     if rightParts[i-1].p2() != rightParts[i].p1():
                         theMesh.append( ((rightParts[i-1].p2().x(), rightParts[i-1].p2().y()),
@@ -157,7 +157,7 @@ class TrajectoryMesh:
                         foundIntersection = True
 
                         if ii-i > 1:
-                            for l in xrange(i + 1, ii):
+                            for l in range(i + 1, ii):
                                 segData[l] = QLineF(pt, pt)
                         break
                 if foundIntersection:
@@ -207,7 +207,7 @@ class TrajectoryMesh:
                             break
                     i1 += 1
                 if foundIntersection:
-                    for l in xrange(firstI, lastI):
+                    for l in range(firstI, lastI):
                         segData[-l] = QLineF(pt, pt)
                     break
 

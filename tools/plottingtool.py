@@ -26,6 +26,7 @@
 from qgis.core import *
 from qgis.gui import *
 import qgis
+import os
 
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
@@ -42,30 +43,30 @@ from shapely.geometry import LineString
 
 import numpy as np
 
-from .. import pyqtgraph as pg
-from ..pyqtgraph import exporters
-pg.setConfigOption('background', 'w')
+# from .. import pyqtgraph as pg
+# from ..pyqtgraph import exporters
+# pg.setConfigOption('background', 'w')
 
 from .. import dxfwrite
 from ..dxfwrite import DXFEngine as dxf
 
 has_qwt = False
 has_mpl = False
-try:
-    from PyQt4.Qwt5 import *
-    has_qwt = True
-    import itertools # only needed for Qwt plot
-except:
-    pass
-
-
-try:
-    from matplotlib import *
-    import matplotlib
-    #print("profiletool : matplotlib %s imported" % matplotlib.__version__)
-    has_mpl = True
-except:
-    pass
+# try:
+#     from PyQt4.Qwt5 import *
+#     has_qwt = True
+#     import itertools # only needed for Qwt plot
+# except:
+#     pass
+#
+#
+# try:
+#     from matplotlib import *
+#     import matplotlib
+#     #print("profiletool : matplotlib %s imported" % matplotlib.__version__)
+#     has_mpl = True
+# except:
+#     pass
 
 from .utils import *
 from .CutFillBetweenItem import *
@@ -261,13 +262,13 @@ class PlottingTool:
                         if len(newP1):
                             polygon = []
                             for p in newP1:
-                                polygon.append(QgsPoint(p[0], p[1]))
+                                polygon.append(QgsPointXY(p[0], p[1]))
                             for p in reversed(newP2):
-                                polygon.append(QgsPoint(p[0], p[1]))
+                                polygon.append(QgsPointXY(p[0], p[1]))
 
                             if len(polygon):
                                 f = QgsFeature(fields)
-                                f.setGeometry(QgsGeometry.fromPolygon([polygon]))
+                                f.setGeometry(QgsGeometry.fromPolygonXY([polygon]))
                                 f.setAttribute('ID', id-1)
                                 polygonLayer.addFeatures([f])
 
@@ -477,7 +478,7 @@ class PlottingTool:
         with edit(pointLayer):
             while start <= end:
                 f = QgsFeature(fields)
-                f.setGeometry(QgsGeometry.fromPoint(QgsPoint(x, start)))
+                f.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(x, start)))
                 f.setAttribute('name', '%.0f' % start)
                 f.setAttribute('kind', 1)
                 pointLayer.addFeatures([f])
@@ -591,13 +592,13 @@ class PlottingTool:
                 polyline = [(pt[0], pt[1] * -1.0) for pt in trajectory]
                 line = LineString(polyline)
                 count = int(line.length / step) + 1
-                for interval in xrange(0, count):
+                for interval in range(0, count):
                     pt1 = line.interpolate(interval * step)
                     pt2 = line.interpolate(interval * step + 1)
                     angle = QLineF(QPointF(pt1.coords[0][0], pt1.coords[0][1]),
                                    QPointF(pt2.coords[0][0], pt2.coords[0][1])).angle()
                     f = QgsFeature(fields)
-                    f.setGeometry(QgsGeometry.fromPoint(QgsPoint(pt1.coords[0][0], pt1.coords[0][1])))
+                    f.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(pt1.coords[0][0], pt1.coords[0][1])))
                     f.setAttribute('name', "%.0f" % (interval * step + startMd))
                     f.setAttribute('kind', 2)
                     f.setAttribute('angle', angle)
@@ -703,9 +704,9 @@ class PlottingTool:
                     zoneColor = inter[1]
                     points = inter[2]
                     zoneColors[name] = zoneColor
-                    polyline = [QgsPoint(pt[0], pt[1] * -1.0) for pt in points]
+                    polyline = [QgsPointXY(pt[0], pt[1] * -1.0) for pt in points]
                     f = QgsFeature(fields)
-                    f.setGeometry(QgsGeometry.fromPolygon([polyline]))
+                    f.setGeometry(QgsGeometry.fromPolygonXY([polyline]))
                     f.setAttribute('well_id', wellId)
                     f.setAttribute('name', name)
                     polyLayer.addFeatures([f])
