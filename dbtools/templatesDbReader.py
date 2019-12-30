@@ -61,7 +61,7 @@ class TemplatesDbReader(DbReaderBase):
             return self.db.execute(self.get_sql('template.sql'), app_name='tmpltA')
 
         except Exception as e:
-            self.iface.messageBar().pushMessage(self.tr("Error"), str(e), level=QgsMessageBar.CRITICAL)
+            self.iface.messageBar().pushMessage(self.tr("Error"), str(e), level=Qgis.Critical)
             return None
 
     def parceCLob(self, strToParce):

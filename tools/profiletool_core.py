@@ -104,6 +104,8 @@ class ProfileToolCore(QWidget):
         # dockwidget graph zone
         self.dockwidget.changePlotLibrary(self.dockwidget.cboLibrary.currentIndex())
 
+        self.enableMouseCoordonates()
+
     def activateProfileMapTool(self):
         self.saveTool = self.iface.mapCanvas().mapTool()  # Save the standard mapttool for restoring it at the end
         # Listeners of mouse
@@ -264,7 +266,7 @@ class ProfileToolCore(QWidget):
         # Mouse tracking
 
         self.updateCursorOnMap(self.x_cursor)
-        self.enableMouseCoordonates(self.dockwidget.plotlibrary)
+        self.enableMouseCoordonates()
 
     def updateWells(self):
         if self.dockwidget.showWells:
@@ -299,7 +301,7 @@ class ProfileToolCore(QWidget):
             else:
                 PlottingTool().clearLogLayer(self.dockwidget)
                 self.iface.messageBar().pushMessage(self.tr(u"Geology cut"), u'Скважины не найдены, убедитесь в правильности выбора проекта',
-                                                    level=QgsMessageBar.CRITICAL, duration=10)
+                                                    level=Qgis.Critical, duration=10)
 
     def redrawLogs(self, templateId):
         self.updateLogs(templateId)
@@ -537,8 +539,7 @@ class ProfileToolCore(QWidget):
                         pointprojected = geom.interpolate(x).asPoint()
                     else:
                         pointprojected = points[0]
-                except (IndexError, AttributeError):
-                    print('Error')
+                except:
                     pointprojected = None
 
                 if pointprojected:
@@ -581,30 +582,10 @@ class ProfileToolCore(QWidget):
     # ******************************************************************************************
 
     def activateMouseTracking(self, int1):
-
-        if self.dockwidget.TYPE == 'PyQtGraph':
-
-            if int1 == 2:
-                self.doTracking = True
-            elif int1 == 0:
-                self.doTracking = False
-
-        elif self.dockwidget.TYPE == 'Matplotlib':
-            if int1 == 2:
-                self.doTracking = True
-                self.cid = self.dockwidget.plotWdg.mpl_connect('motion_notify_event', self.mouseevent_mpl)
-            elif int1 == 0:
-                self.doTracking = False
-                try:
-                    self.dockwidget.plotWdg.mpl_disconnect(self.cid)
-                except:
-                    pass
-                try:
-                    if self.vline:
-                        self.dockwidget.plotWdg.figure.get_axes()[0].lines.remove(self.vline)
-                        self.dockwidget.plotWdg.draw()
-                except Exception as e:
-                    print(str(e))
+        if int1 == 2:
+            self.doTracking = True
+        elif int1 == 0:
+            self.doTracking = False
 
     def mouseevent_mpl(self, event):
         """
@@ -632,14 +613,8 @@ class ProfileToolCore(QWidget):
             """
             self.updateCursorOnMap(xdata)
 
-    def enableMouseCoordonates(self, library):
+    def enableMouseCoordonates(self):
         self.dockwidget.plotCanvas.canvas.xyCoordinates.connect(self.xyCoordinates)
-
-        # if library == "PyQtGraph":
-        # self.dockwidget.plotWdg.scene().sigMouseMoved.connect(self.mouseMovedPyQtGraph)
-        # self.dockwidget.plotWdg.getViewBox().autoRange( items=self.dockwidget.plotWdg.getPlotItem().listDataItems())
-        # self.dockwidget.plotWdg.getViewBox().sigRangeChanged.connect(self.dockwidget.plotRangechanged)
-        # self.dockwidget.connectPlotRangechanged()
 
     def disableMouseCoordonates(self):
         try:
@@ -769,7 +744,6 @@ class ProfileToolCore(QWidget):
         proj = QgsProject.instance()
         cutDefStr = proj.readEntry("CutPlugin", "GeologyCut", "[]")[0]
         pointsStr = proj.readEntry("CutPlugin", "PointToDraw", '[]')[0]
-        print(cutDefStr, pointsStr)
 
         self.dockwidget.blockAllSignals(True)
 

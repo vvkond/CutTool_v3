@@ -845,30 +845,30 @@ class PlottingTool:
         if lineLayer:
             self.createPolylineStyle(lineLayer, model1)
 
-        if library == "PyQtGraph":
-            pitems = wdg.plotWdg.getPlotItem()
-            for i, item in enumerate(pitems.listDataItems()):
-                if item.name() == name:
-                    item.setPen( color1,  width=2)
-
-        if library == "Qwt5":
-            temp1 = wdg.plotWdg.itemList()
-            for i in range(len(temp1)):
-                if name == str(temp1[i].title().text()):
-                    curve = temp1[i]
-                    curve.setPen(QPen(color1, 3))
-                    wdg.plotWdg.replot()
-                    # break  # Don't break as there may be multiple curves with a common name (segments separated with None values)
-
-        if library == "Matplotlib":
-            temp1 = wdg.plotWdg.figure.get_axes()[0].get_lines()
-            for i in range(len(temp1)):
-                if name == str(temp1[i].get_gid()):
-                    temp1[i].set_color((color1.red() / 255.0 , color1.green() / 255.0 , color1.blue() / 255.0 ,  color1.alpha() / 255.0 ))
-                    wdg.plotWdg.figure.get_axes()[0].redraw_in_frame()
-                    wdg.plotWdg.figure.canvas.draw()
-                    wdg.plotWdg.draw()
-                    break
+        # if library == "PyQtGraph":
+        #     pitems = wdg.plotWdg.getPlotItem()
+        #     for i, item in enumerate(pitems.listDataItems()):
+        #         if item.name() == name:
+        #             item.setPen( color1,  width=2)
+        #
+        # if library == "Qwt5":
+        #     temp1 = wdg.plotWdg.itemList()
+        #     for i in range(len(temp1)):
+        #         if name == str(temp1[i].title().text()):
+        #             curve = temp1[i]
+        #             curve.setPen(QPen(color1, 3))
+        #             wdg.plotWdg.replot()
+        #             # break  # Don't break as there may be multiple curves with a common name (segments separated with None values)
+        #
+        # if library == "Matplotlib":
+        #     temp1 = wdg.plotWdg.figure.get_axes()[0].get_lines()
+        #     for i in range(len(temp1)):
+        #         if name == str(temp1[i].get_gid()):
+        #             temp1[i].set_color((color1.red() / 255.0 , color1.green() / 255.0 , color1.blue() / 255.0 ,  color1.alpha() / 255.0 ))
+        #             wdg.plotWdg.figure.get_axes()[0].redraw_in_frame()
+        #             wdg.plotWdg.figure.canvas.draw()
+        #             wdg.plotWdg.draw()
+        #             break
 
     def changeFillColor(self,wdg, library, symbol, name, model1):                    #Action when clicking the tableview - fill
 
@@ -878,42 +878,42 @@ class PlottingTool:
 
 
     def changeAttachCurve(self, wdg, library, bool, name):                #Action when clicking the tableview - checkstate
-
-        if library == "PyQtGraph":
-            pitems = wdg.plotWdg.getPlotItem()
-            for i, item in enumerate(pitems.listDataItems()):
-                if item.name() == name:
-                    if bool:
-                        item.setVisible(True)
-                    else:
-                        item.setVisible(False)
-
-        elif library == "Qwt5":
-            temp1 = wdg.plotWdg.itemList()
-            for i in range(len(temp1)):
-                if name == str(temp1[i].title().text()):
-                    curve = temp1[i]
-                    if bool:
-                        curve.setVisible(True)
-                    else:
-                        curve.setVisible(False)
-                    wdg.plotWdg.replot()
-                    break
-
-        if library == "Matplotlib":
-
-            temp1 = wdg.plotWdg.figure.get_axes()[0].get_lines()
-            for i in range(len(temp1)):
-                if name == str(temp1[i].get_gid()):
-                    if bool:
-                        temp1[i].set_visible(True)
-                    else:
-                        temp1[i].set_visible(False)
-                    wdg.plotWdg.figure.get_axes()[0].redraw_in_frame()
-                    wdg.plotWdg.figure.canvas.draw()
-                    wdg.plotWdg.draw()
-
-                    break
+        pass
+        # if library == "PyQtGraph":
+        #     pitems = wdg.plotWdg.getPlotItem()
+        #     for i, item in enumerate(pitems.listDataItems()):
+        #         if item.name() == name:
+        #             if bool:
+        #                 item.setVisible(True)
+        #             else:
+        #                 item.setVisible(False)
+        #
+        # elif library == "Qwt5":
+        #     temp1 = wdg.plotWdg.itemList()
+        #     for i in range(len(temp1)):
+        #         if name == str(temp1[i].title().text()):
+        #             curve = temp1[i]
+        #             if bool:
+        #                 curve.setVisible(True)
+        #             else:
+        #                 curve.setVisible(False)
+        #             wdg.plotWdg.replot()
+        #             break
+        #
+        # if library == "Matplotlib":
+        #
+        #     temp1 = wdg.plotWdg.figure.get_axes()[0].get_lines()
+        #     for i in range(len(temp1)):
+        #         if name == str(temp1[i].get_gid()):
+        #             if bool:
+        #                 temp1[i].set_visible(True)
+        #             else:
+        #                 temp1[i].set_visible(False)
+        #             wdg.plotWdg.figure.get_axes()[0].redraw_in_frame()
+        #             wdg.plotWdg.figure.canvas.draw()
+        #             wdg.plotWdg.draw()
+        #
+        #             break
 
 
     def manageMatplotlibAxe(self, axe1):

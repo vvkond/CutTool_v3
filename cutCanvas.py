@@ -224,7 +224,7 @@ class MirrorMap(QWidget):
         canvas_layers = []
         for layerId in QgsProject.instance().mapLayers():
             if layerId in self.layers:
-                canvas_layers.append(QgsProject.instance().mapLayer(layerId))
+                canvas_layers.insert(0, QgsProject.instance().mapLayer(layerId))
 
         self.canvas.setLayers(canvas_layers)
 

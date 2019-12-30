@@ -128,7 +128,8 @@ class PTDockWidget(QDockWidget, FormClass):
         self.tableViewTool.layerAddedOrRemoved.connect(self.refreshPlot)
         self.pushButton_reinitview.clicked.connect(self.reScalePlot)
 
-        self.checkBox_showcursor.stateChanged.connect(self.showCursor)
+        # self.checkBox_showcursor.stateChanged.connect(self.showCursor)
+        self.checkBox_showcursor.setVisible(False)
 
         self.fullResolutionCheckBox.stateChanged.connect(self.refreshPlot)
         self.profileInterpolationCheckBox.stateChanged.connect(self.refreshPlot)

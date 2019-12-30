@@ -122,7 +122,7 @@ class WellsDbReader(DbReaderBase):
             return self.db.execute(self.get_sql('WellBottoms.sql'))
 
         except Exception as e:
-            self.iface.messageBar().pushMessage(self.tr("Error"), str(e), level=QgsMessageBar.CRITICAL)
+            self.iface.messageBar().pushMessage(self.tr("Error"), str(e), level=Qgis.Critical)
             return None
 
 
