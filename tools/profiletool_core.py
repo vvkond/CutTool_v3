@@ -30,7 +30,7 @@ from qgis.PyQt import uic, QtCore, QtGui, QtXml
 try:
     from qgis.PyQt.QtGui import QWidget, QInputDialog
 except:
-    from qgis.PyQt.QtWidgets import QWidget, QInputDialog
+    from qgis.PyQt.QtWidgets import QWidget, QInputDialog, QMessageBox
 from qgis.PyQt.QtSvg import *  # required in some distros
 # qgis import
 import qgis
@@ -42,11 +42,13 @@ import sys
 from math import sqrt
 import numpy as np
 import ast
-from shapely.geometry import LineString
+import shapely
 # plugin import
 from .dataReaderTool import DataReaderTool
 from .plottingtool import PlottingTool
 from .ptmaptool import ProfiletoolMapTool, ProfiletoolMapToolRenderer
+from ..dbtools.CornerPointGrid import *
+from ..dbtools.modelDbReader import *
 from ..ui.ptdockwidget import PTDockWidget
 from ..ui.dlgZonationList import *
 from . import profilers
@@ -267,6 +269,38 @@ class ProfileToolCore(QWidget):
 
         self.updateCursorOnMap(self.x_cursor)
         self.enableMouseCoordonates()
+
+    def updateModel(self):
+        if not self.dockwidget.showModel:
+            return
+        print('update model')
+
+        dbReader = ModelDbReader(self.iface, self)
+        grid = dbReader.readModel(self.dockwidget.currentModelNumber)
+        if not grid:
+            QMessageBox.critical(None, self.tr(u'Ошибка'), self.tr('Ошибка загрузки модели'), QMessageBox.Ok)
+            return
+
+        dbReader.readPropertyCube(grid, self.dockwidget.currentProperty)
+        points = self.createModelCut(grid)
+        PlottingTool().attachModel(self.dockwidget, points, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+
+    def createModelCut(self, grid):
+        shapely_line = shapely.geometry.LineString(self.pointstoDraw)
+
+        points = []
+        k = 1
+        istart = grid.nCellsX * grid.nCellsY * k
+        for i in range(1, grid.nCellsX):
+            for j in range(1, grid.nCellsY):
+                x1, y1, x2, y2, x3, y3, x4, y4 = grid.getPolygon(i, j, k);
+                shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3), (x4,y4)])
+                intGeom = shapely_poly.intersection(shapely_line)
+                if intGeom and len(intGeom.coords) > 1:
+                    points.append([p for p in intGeom.coords])
+            
+        return points
+
 
     def updateWells(self):
         if self.dockwidget.showWells:
@@ -723,6 +757,12 @@ class ProfileToolCore(QWidget):
         proj.writeEntry("CutPlugin", "currentTemplateId", self.dockwidget.currentTemplateId)
         proj.writeEntry("CutPlugin", "isDefaultTrackWidth", 'True' if self.dockwidget.isDefaultTrackWidth else 'False')
         proj.writeEntry("CutPlugin", "trackWidth", self.dockwidget.trackWidth)
+        if self.dockwidget.modelListWidget.currentItem():
+            model_no = self.dockwidget.modelListWidget.currentItem().data(Qt.UserRole)
+            proj.writeEntry("CutPlugin", "model_no", model_no)
+        if self.dockwidget.propertyListWidget.currentItem():
+            key = self.dockwidget.propertyListWidget.currentItem().text()
+            proj.writeEntry("CutPlugin", "property_key", key)
 
     def symbolToString(self, symbol):
         if not symbol:
@@ -759,6 +799,20 @@ class ProfileToolCore(QWidget):
         self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[
                                                   0] == 'True'
         self.dockwidget.trackWidth = int(proj.readEntry("CutPlugin", "trackWidth", '10')[0])
+
+        try:
+            model_no = int(proj.readEntry("CutPlugin", "model_no", '0')[0])
+            for i in range(self.dockwidget.modelListWidget.count()):
+                item = self.dockwidget.modelListWidget.item(i)
+                if int(item.data(Qt.UserRole)) == model_no:
+                    self.dockwidget.modelListWidget.setCurrentItem(item)
+                    break
+            propKey = proj.readEntry("CutPlugin", "property_key", "")[0]
+            items = self.dockwidget.propertyListWidget.findItems(propKey, Qt.MatchExactly)
+            if len(items):
+                self.dockwidget.propertyListWidget.setCurrentItem(items[0])
+        except:
+            pass
 
         cutDefs = ast.literal_eval(cutDefStr)
 

@@ -8,6 +8,11 @@ import qgis
 import numpy
 
 from .dbReaderBase import *
+from .CornerPointGrid import *
+
+CORNER_POINT = 2
+FULL_CORNER_POINT = 4
+SIM_INDT = -999
 
 
 class ModelDbReader(DbReaderBase):
@@ -44,9 +49,50 @@ class ModelDbReader(DbReaderBase):
         records = self.db.execute(sql)
         if records:
             for input_row in records:
-                defSld = input_row[1]
-                nCelsX = input_row[4]
-                nCelsY = input_row[5]
-                nCelsZ = input_row[6]
+                gridSld = input_row[1]
+                geometryType = input_row[2]
+                nCellsX = input_row[4]
+                nCellsY = input_row[5]
+                nCellsZ = input_row[6]
+
+                coordLinesCount = 2 * (nCellsX + 1) * (nCellsY + 1)
+                cornerPointsCount = 8 * nCellsX * nCellsY * nCellsZ
+
+                sql = 'select tig_cell_x_map_coord, tig_cell_y_map_coord, tig_cell_z_map_coord from tig_sim_grid_defn ' \
+                      'where db_sldnid = ' + str(gridSld)
+
+                grid_records = self.db.execute(sql)
+                for row in grid_records:
+                    grid = CornerPointGrid(modelId, nCellsX, nCellsY, nCellsZ)
+                    # grid.layerName = modelName
+
+                    grid.XCoordLine = numpy.fromstring(self.db.blobToString(row[0]), '>f').astype('d')
+                    grid.YCoordLine = numpy.fromstring(self.db.blobToString(row[1]), '>f').astype('d')
+                    grid.ZCoordLine = numpy.fromstring(self.db.blobToString(row[2]), '>f').astype('d')
+                    if ((geometryType != CORNER_POINT and geometryType != FULL_CORNER_POINT)
+                            or len(grid.XCoordLine) != coordLinesCount
+                            or len(grid.YCoordLine) != coordLinesCount
+                            or len(grid.ZCoordLine) != coordLinesCount + cornerPointsCount):
+                        break
+
+                    if self.screenXform:
+                        for i in range(len(grid.XCoordLine)):
+                            pt1 = QgsPointXY(grid.XCoordLine[i], grid.YCoordLine[i])
+                            pt1 = self.screenXform.transform(pt1)
+                            grid.XCoordLine[i] = pt1.x()
+                            grid.YCoordLine[i] = pt1.y()
+
+                    return grid
 
         return None
+
+    def readPropertyCube(self, grid, simLink):
+        sql = 'select ' + simLink.simFldnam + ' from ' + simLink.simSldnam + ' where tig_simultn_model_no=' + str(
+            grid.model_no)
+        records = self.db.execute(sql)
+        if records:
+            for row in records:
+                grid.cube = numpy.fromstring(self.db.blobToString(row[0]), '>f').astype('d')
+                grid.cubeMin = numpy.amin(grid.cube)
+                grid.cubeMax = numpy.amax(grid.cube)
+                break

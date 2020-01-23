@@ -149,6 +149,7 @@ class ProfiletoolMapToolRenderer():
             self.profiletool.updateProfil(self.pointstoDraw)
             #VK
             self.profiletool.updateWells()
+            self.profiletool.updateModel()
 
             #Reset
             self.pointstoDraw = []

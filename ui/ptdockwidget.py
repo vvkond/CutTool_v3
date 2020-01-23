@@ -55,7 +55,27 @@ try:
 except ImportError:
     matplotlib_loaded = False
 
+class SimulationLink:
+    def __init__(self, mnemonic, coordinate, simSldnam, simFldnam, simRunFldnam):
+        self.mnemonic = mnemonic
+        self.coordinate = coordinate
+        self.simSldnam = simSldnam
+        self.simFldnam = simFldnam
+        self.simRunFldnam = simRunFldnam
 
+
+PORO = 'Porosity'
+XPERM = 'Permeability in x direction'
+YPERM = 'Permeability in y direction'
+ZPERM = 'Permeability in z direction'
+NTG = 'Cell net to gross ratio'
+GASSAT = 'Gas saturation for grid block'
+WATSAT = 'Water saturation for grid block'
+PBUB = 'Bubble point pressures'
+MPBUB = 'Minimum bubble point pressures'
+OGR = 'Initial oil/gas ratios'
+MOGR = 'Minimum oil/gas ratio'
+MNWSAT = 'Minimum water saturation'
 
 uiFilePath = os.path.abspath(os.path.join(os.path.dirname(__file__), 'profiletool.ui'))
 FormClass = uic.loadUiType(uiFilePath)[0]
@@ -80,6 +100,36 @@ class PTDockWidget(QDockWidget, FormClass):
         self.setMinimumSize(minsize)
         self.setMaximumSize(maxsize)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+        self.simLinks = {
+            PORO: SimulationLink(PORO, False, "tig_sim_geom_data",
+                                 "tig_cell_porosity",
+                                 "tig_geom_data_vrsn_no"),
+
+            XPERM: SimulationLink(XPERM, False, "tig_sim_geom_data",
+                                  "tig_x_permeability",
+                                  "tig_geom_data_vrsn_no"),
+
+            YPERM: SimulationLink(YPERM, False, "tig_sim_geom_data",
+                                  "tig_y_permeability",
+                                  "tig_geom_data_vrsn_no"),
+
+            ZPERM: SimulationLink(ZPERM, False, "tig_sim_geom_data",
+                                  "tig_z_permeability",
+                                  "tig_geom_data_vrsn_no"),
+
+            NTG: SimulationLink(NTG, False, "tig_sim_geom_data",
+                                "tig_net_to_gross_ratio",
+                                "tig_geom_data_vrsn_no"),
+
+            GASSAT: SimulationLink(GASSAT, False, "tig_sim_geom_data",
+                                   "tig_geom_vap_saturation",
+                                   "tig_geom_data_vrsn_no"),
+
+            WATSAT: SimulationLink(WATSAT, False, "tig_sim_geom_data",
+                                   "tig_geom_aqu_saturation",
+                                   "tig_geom_data_vrsn_no")
+        }
 
         #init scale widgets
         # self.sbMaxVal.setValue(0)
@@ -169,11 +219,21 @@ class PTDockWidget(QDockWidget, FormClass):
     def fillModelList(self):
         dbReader = ModelDbReader(self.iface, self)
         modelList = dbReader.readModelList()
-        self.mModelListWidget.clear()
+        self.modelListWidget.clear()
         for model in modelList:
             item = QListWidgetItem(model[1])
             item.setData(Qt.UserRole, model[0])
-            self.mModelListWidget.addItem(item)
+            self.modelListWidget.addItem(item)
+
+    def fillParamList(self, model_no):
+        self.propertyListWidget.clear()
+
+        for key in self.simLinks:
+            sl = self.simLinks[key]
+            item = QListWidgetItem(sl.mnemonic)
+            self.propertyListWidget.addItem(item)
+            # if key == self.curPropKey:
+            #     self.propertyListWidget.setCurrentItem(item)
 
     def addOptionComboboxItems(self):
         self.cboLibrary.addItem("PyQtGraph")
@@ -225,58 +285,6 @@ class PTDockWidget(QDockWidget, FormClass):
         if not self.plotCanvas:
             self.plotCanvas = MirrorMap(self.frame_for_plot, self.iface)
             layout.addWidget(self.plotCanvas)
-
-        # if library == "PyQtGraph":
-        #     self.stackedWidget.setCurrentIndex(0)
-        #     self.plotWdg = PlottingTool().changePlotWidget("PyQtGraph", self.frame_for_plot)
-        #     # layout.addWidget(self.plotWdg)
-        #     self.TYPE = "PyQtGraph"
-        #     self.cbxSaveAs.clear()
-        #     self.cbxSaveAs.addItems(['Graph - PNG','Graph - SVG','3D line - DXF'])
-        #
-        # elif library == "Qwt5":
-        #     self.stackedWidget.setCurrentIndex(0)
-        #     widget1 = self.stackedWidget.widget(1)
-        #     if widget1:
-        #         self.stackedWidget.removeWidget( widget1 )
-        #         widget1 = None
-        #     self.widget_save_buttons.setVisible( True )
-        #     self.plotWdg = PlottingTool().changePlotWidget("Qwt5", self.frame_for_plot)
-        #     # layout.addWidget(self.plotWdg)
-        #
-        #     if QT_VERSION < 0X040100:
-        #         idx = self.cbxSaveAs.model().index(0, 0)
-        #         self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
-        #         self.cbxSaveAs.setCurrentIndex(1)
-        #     if QT_VERSION < 0X040300:
-        #         idx = self.cbxSaveAs.model().index(1, 0)
-        #         self.cbxSaveAs.model().setData(idx, QVariant(0), QtCore.Qt.UserRole - 1)
-        #         self.cbxSaveAs.setCurrentIndex(2)
-        #     self.TYPE = "Qwt5"
-        #
-        # elif library == "Matplotlib":
-        #     self.stackedWidget.setCurrentIndex(0)
-        #     #self.widget_save_buttons.setVisible( False )
-        #     self.plotWdg = PlottingTool().changePlotWidget("Matplotlib", self.frame_for_plot)
-        #     # layout.addWidget(self.plotWdg)
-        #
-        #     if int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 4 :
-        #         #from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-        #         mpltoolbar = matplotlib.backends.backend_qt4agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
-        #         #layout.addWidget( mpltoolbar )
-        #         self.stackedWidget.insertWidget(1, mpltoolbar)
-        #         self.stackedWidget.setCurrentIndex(1)
-        #         lstActions = mpltoolbar.actions()
-        #         mpltoolbar.removeAction( lstActions[ 7 ] )
-        #         mpltoolbar.removeAction( lstActions[ 8 ] )
-        #
-        #     elif int(qgis.PyQt.QtCore.QT_VERSION_STR[0]) == 5 :
-        #         #from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-        #         #mpltoolbar = matplotlib.backends.backend_qt5agg.NavigationToolbar2QTAgg(self.plotWdg, self.frame_for_plot)
-        #         pass
-        #     self.TYPE = "Matplotlib"
-        #     self.cbxSaveAs.clear()
-        #     self.cbxSaveAs.addItems(['Graph - PDF','Graph - PNG','Graph - SVG','Graph - print (PS)','3D line - DXF'])
 
     # ********************************************************************************
     # properties ****************************************************************
@@ -334,9 +342,16 @@ class PTDockWidget(QDockWidget, FormClass):
 
     @property
     def currentModelNumber(self):
-        if self.mModelListWidget.currentItem() is not None:
-            return self.mModelListWidget.currentItem().data(Qt.UserRole)
+        if self.modelListWidget.currentItem() is not None:
+            return self.modelListWidget.currentItem().data(Qt.UserRole)
         return -1
+
+    @property
+    def currentProperty(self):
+        if self.propertyListWidget.currentItem() is not None:
+            key = self.propertyListWidget.currentItem().text()
+            return self.simLinks[key]
+        return self.simLinks[PORO]
 
 
     #********************************************************************************
@@ -397,6 +412,17 @@ class PTDockWidget(QDockWidget, FormClass):
         else:
             self.plotCanvas.delLayerByName(PlottingTool.WellsLayerName)
 
+    @pyqtSlot(bool)
+    def on_mShowModel_toggled(self, val):
+        if val:
+            self.profiletoolcore.updateModel()
+        else:
+            self.plotCanvas.delLayerByName(PlottingTool.ModelLayerName)
+
+    def on_modelListWidget_currentItemChanged(self, current, previous):
+        model_no = current.data(Qt.UserRole)
+        self.fillParamList(model_no)
+
     # @pyqtSlot(int)
     # def on_wellTemplates_activated(self, index):
     #     sldnid = self.wellTemplates.itemData(index)
@@ -418,12 +444,14 @@ class PTDockWidget(QDockWidget, FormClass):
     #     if not self.profiletoolcore.finishing:
     #         self.profiletoolcore.redrawLogs(self.currentTemplateId)
 
+    @pyqtSlot()
     def on_mApplyPushButton_clicked(self):
         if not self.profiletoolcore.finishing:
             if self.isProjectChanged():
                 self.fillTemplateList()
             self.refreshPlot()
             self.profiletoolcore.updateWells()
+            self.profiletoolcore.updateModel()
 
 
     def blockAllSignals(self, val):

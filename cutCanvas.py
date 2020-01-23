@@ -121,7 +121,7 @@ class MirrorMap(QWidget):
 
         if QGis.QGIS_VERSION_INT >= 21100:
             if len(sel_layers) == 1 and sel_layers[0] in self.layers:
-                layer = QgsMapLayerRegistry.instance().mapLayer(sel_layers[0])
+                layer = QgsProject.instance().mapLayer(sel_layers[0])
                 self._populateLayerStylesMenu(layer)
             else:
                 self._populateLayerStylesMenu(None)
@@ -130,7 +130,7 @@ class MirrorMap(QWidget):
         sel_layers = self._selectedLayers()
         if len(sel_layers) != 1:
             return
-        layer = QgsMapLayerRegistry.instance().mapLayer(sel_layers[0])
+        layer = QgsProject.instance().mapLayer(sel_layers[0])
 
         styleName = self.sender().text()
         if styleName == "(default)":

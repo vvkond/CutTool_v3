@@ -86,6 +86,8 @@ class PlottingTool:
     LabelsLayerDef = u"point?crs=epsg:4326&field=name:string&field=angle:double&field=kind:integer"
     ZoneLayerName = u'_cutZones'
     ZoneLayerDef = u"Polygon?crs=epsg:4326&field=ID:integer&field=well_id:integer&field=name:string&field=header:string"
+    ModelLayerName = u'_model'
+    ModelLayerDef = u"Polygon?crs=epsg:4326&field=value:double"
 
     LayerGroupName = u'Разрез'
 
@@ -106,6 +108,7 @@ class PlottingTool:
         self.styleForLayer[PlottingTool.WellsLayerName] = plugin_dir + '/../styles/wellLines.qml'
         self.styleForLayer[PlottingTool.LogLineLayerName] = plugin_dir + '/../styles/logLines.qml'
         self.styleForLayer[PlottingTool.ZoneLayerName] = plugin_dir + '/../styles/zones.qml'
+        self.styleForLayer[PlottingTool.ModelLayerName] = plugin_dir + '/../styles/model.qml'
 
         self.colorRamp = {}
         self.colorRamp[3] = QColor(Qt.black)
@@ -415,7 +418,7 @@ class PlottingTool:
         if not lineLayers:
             lineLayer = QgsVectorLayer(fields, layerName, "memory")
             lineLayer.setCrs(mapCanvas.mapSettings().destinationCrs())
-            QgsMapLayerRegistry.instance().addMapLayer(lineLayer, False)
+            QgsProject.instance().addMapLayer(lineLayer, False)
             if insertIndex >= 0:
                 group.insertLayer(insertIndex, lineLayer)
             else:
@@ -729,6 +732,31 @@ class PlottingTool:
         polyLayer.setRenderer(renderer)
 
         wdg.plotCanvas.addNewLayer(polyLayer.id())
+
+    def attachModel(self, wdg, polygons, model1, xyAspect):
+        polyLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef, 1)
+
+        aspect = 1.0 / xyAspect
+        extent = wdg.plotCanvas.getExtent()
+        topY = extent.yMaximum()
+
+        with edit(polyLayer):
+            for feat in polyLayer.getFeatures():
+                polyLayer.deleteFeature(feat.id())
+
+            fields = polyLayer.fields()
+            zoneColors = {}
+            for poly in polygons:
+                polyline = [QgsPointXY(pt[0], pt[1]) for pt in poly]
+                f = QgsFeature(fields)
+                f.setGeometry(QgsGeometry.fromPolygonXY([polyline]))
+                f.setAttribute('value', 0)
+                polyLayer.addFeatures([f])
+
+        polyLayer.removeSelection()
+
+        wdg.plotCanvas.addNewLayer(polyLayer.id())
+
 
     def findMin(self, values):
         minVal = min( z for z in values if z is not None )
