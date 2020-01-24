@@ -30,6 +30,7 @@ class CornerPointGrid:
                             8 * self.nCellsX * self.nCellsY * (k - 1) +
                             4 * self.nCellsX * self.nCellsY * dk +
                             2 * self.nCellsX * dj + di]
+
         a = (z-z1)/(z2-z1)
         x = x1+a*(x2-x1)
         y = y1+a*(y2-y1)
@@ -123,14 +124,18 @@ class CornerPointGrid:
     def getPolygon(self, i, j, layer):
         x1 = self.getLeftBackUpperCornerX(i, j, layer)
         y1 = self.getLeftBackUpperCornerY(i, j, layer)
+        z1 = self.getLeftBackUpperCornerZ(i, j, layer)
 
         x2 = self.getRightBackUpperCornerX(i, j, layer)
         y2 = self.getRightBackUpperCornerY(i, j, layer)
+        z2 = self.getRightBackUpperCornerZ(i, j, layer)
 
         x3 = self.getRightFrontUpperCornerX(i, j, layer)
         y3 = self.getRightFrontUpperCornerY(i, j, layer)
+        z3 = self.getRightFrontUpperCornerZ(i, j, layer)
 
         x4 = self.getLeftFrontUpperCornerX(i, j, layer)
         y4 = self.getLeftFrontUpperCornerY(i, j, layer)
+        z4 = self.getLeftFrontUpperCornerZ(i, j, layer)
 
-        return (x1,y1, x2,y2, x3,y3, x4,y4)
+        return (x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4)

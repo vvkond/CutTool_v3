@@ -24,6 +24,7 @@
 #---------------------------------------------------------------------
 
 import qgis
+import numpy
 from qgis.PyQt import QtCore
 import math
 
@@ -87,3 +88,21 @@ def getNiceInterval(interval, nextLevel=False, defSteps = []):
         return result * -1
     else:
         return result
+
+#p[0] - x, p[1] - y
+def triangle_area(p1, p2, p3):
+    return 0.5 * (p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1]))
+
+#p[0] - x, p[1] - y, p[2] - value
+def triangle_interpolate_linear(p1, p2, p3, p, nullvalue = -999.0):
+    abc = triangle_area(p1, p2, p3)
+
+    pbc = triangle_area(p, p2, p3)
+    apc = triangle_area(p1, p, p3)
+    abp = triangle_area(p1, p2, p)
+
+    v = nullvalue
+    if abs(abc) > numpy.finfo(float).eps:
+        v = (pbc * p1[2] + apc * p2[2] + abp * p3[2]) / abc
+
+    return v

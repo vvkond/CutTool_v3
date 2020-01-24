@@ -450,8 +450,8 @@ class PTDockWidget(QDockWidget, FormClass):
             if self.isProjectChanged():
                 self.fillTemplateList()
             self.refreshPlot()
-            self.profiletoolcore.updateWells()
             self.profiletoolcore.updateModel()
+            self.profiletoolcore.updateWells()
 
 
     def blockAllSignals(self, val):

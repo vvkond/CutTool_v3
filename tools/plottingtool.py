@@ -747,7 +747,7 @@ class PlottingTool:
             fields = polyLayer.fields()
             zoneColors = {}
             for poly in polygons:
-                polyline = [QgsPointXY(pt[0], pt[1]) for pt in poly]
+                polyline = [QgsPointXY(pt[0], pt[1]*-1.0) for pt in poly]
                 f = QgsFeature(fields)
                 f.setGeometry(QgsGeometry.fromPolygonXY([polyline]))
                 f.setAttribute('value', 0)

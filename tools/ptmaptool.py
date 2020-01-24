@@ -148,8 +148,8 @@ class ProfiletoolMapToolRenderer():
             self.iface.mainWindow().statusBar().showMessage(str(self.pointstoDraw))
             self.profiletool.updateProfil(self.pointstoDraw)
             #VK
-            self.profiletool.updateWells()
             self.profiletool.updateModel()
+            self.profiletool.updateWells()
 
             #Reset
             self.pointstoDraw = []

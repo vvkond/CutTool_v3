@@ -384,4 +384,3 @@ def getenv_system(varname, default=''):
         finally:
             win32api.RegCloseKey(rkey)
         return v
-

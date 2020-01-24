@@ -287,18 +287,89 @@ class ProfileToolCore(QWidget):
 
     def createModelCut(self, grid):
         shapely_line = shapely.geometry.LineString(self.pointstoDraw)
+        aspect = 1.0 / self.dockwidget.mXyAspectRatio.value()
 
-        points = []
+        profileGeom = qgis.core.QgsGeometry.fromPolyline([QgsPoint(point[0], point[1]) for point in self.pointstoDraw])
+        geominlayercrs = qgis.core.QgsGeometry(profileGeom)
+
+        pointInCrs = geominlayercrs.asPolyline()
+        seg_len = [0]
+        for p_start, p_end in zip(pointInCrs[:-1], pointInCrs[1:]):
+            dx = p_end.x() - p_start.x()
+            dy = p_end.y() - p_start.y()
+            seg_len.append(seg_len[-1] + sqrt(dx * dx + dy * dy))
+
+        def interpolate(pt):
+            distline = geominlayercrs.closestSegmentWithContext(pt)
+            p_end = distline[1]
+            vIndex = distline[2] - 1
+            p_start = pointInCrs[vIndex]
+            dx = p_end.x() - p_start.x()
+            dy = p_end.y() - p_start.y()
+            len = sqrt(dx*dx + dy*dy)
+            return seg_len[vIndex] + len
+
+        # sx1, sy1, sz1, sx2, sy2, sz2, sx3, sy3, sz3, sx4, sy4, sz4 = grid.getPolygon(1, 1, 1)
+        # j = 20
+        # points = []
+        # for i in range(1, grid.nCellsX):
+        #     for k in range(1, grid.nCellsZ-1):
+        #         pointsSeg = []
+        #         x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon(i, j, k)
+        #         pointsSeg.append((x1-sx1, z1))
+        #         pointsSeg.append((x2-sx1, z2))
+        #         x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon(i, j, k+1)
+        #         pointsSeg.append((x2 - sx1, z2))
+        #         pointsSeg.append((x1 - sx1, z1))
+        #         points.append(pointsSeg)
+
+        # Find cells of first layer that have intersections
         k = 1
-        istart = grid.nCellsX * grid.nCellsY * k
+        cells = []
         for i in range(1, grid.nCellsX):
             for j in range(1, grid.nCellsY):
-                x1, y1, x2, y2, x3, y3, x4, y4 = grid.getPolygon(i, j, k);
-                shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3), (x4,y4)])
+                x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon(i, j, k)
+                shapely_poly = shapely.geometry.Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
                 intGeom = shapely_poly.intersection(shapely_line)
                 if intGeom and len(intGeom.coords) > 1:
-                    points.append([p for p in intGeom.coords])
-            
+                    cells.append((i, j))
+
+        points = []
+        for c in cells:
+            i = c[0]
+            j = c[1]
+
+            prevPointSeg = []
+            for k in range(1, grid.nCellsZ):
+                istart = grid.nCellsX * grid.nCellsY * k
+                x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4 = grid.getPolygon(i, j, k);
+                #Left triangle
+                shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3)])
+                intGeom = shapely_poly.intersection(shapely_line)
+
+                pointsSeg = []
+                if intGeom and len(intGeom.coords) > 1:
+                    for p in intGeom.coords:
+                        x = interpolate(QgsPointXY(p[0], p[1]))*aspect
+                        y = triangle_interpolate_linear((x1,y1, z1), (x2,y2, z2), (x3,y3,z3), p)
+                        pointsSeg.append((x, y))
+
+                # Right triangle
+                shapely_poly = shapely.geometry.Polygon([(x1, y1), (x3, y3), (x4, y4)])
+                intGeom = shapely_poly.intersection(shapely_line)
+                if intGeom and len(intGeom.coords) > 1:
+                    for p in intGeom.coords:
+                        x = interpolate(QgsPointXY(p[0], p[1])) * aspect
+                        y = triangle_interpolate_linear((x1, y1, z1), (x3, y3, z3), (x4, y4, z4), p)
+                        pointsSeg.append((x, y))
+
+                pointsSeg = sorted(pointsSeg, key=lambda p: p[0])
+                if k > 1:
+                    tmpList = list(pointsSeg)
+                    tmpList.extend(prevPointSeg)
+                    points.append(tmpList)
+                prevPointSeg = list(reversed(pointsSeg))
+
         return points
 
 
