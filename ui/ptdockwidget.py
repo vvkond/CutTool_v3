@@ -34,6 +34,7 @@ from qgis.gui import *
 #other
 import platform
 import os
+import time
 #plugin import
 from ..tools.plottingtool import *
 from ..tools.tableviewtool import TableViewTool
@@ -93,6 +94,7 @@ class PTDockWidget(QDockWidget, FormClass):
         self.setupUi(self)
         self.profiletoolcore = profiletoolcore
         self.iface = iface1
+        self.progress = None
         #Apperance
         self.location = QtCore.Qt.BottomDockWidgetArea
         minsize = self.minimumSize()
@@ -352,6 +354,21 @@ class PTDockWidget(QDockWidget, FormClass):
             key = self.propertyListWidget.currentItem().text()
             return self.simLinks[key]
         return self.simLinks[PORO]
+
+    def showProgressBar(self,msg,maximum):
+        self.iface.messageBar().clearWidgets()
+        self.progressMessageBar = self.iface.messageBar().createMessage(msg)
+        self.progress = QProgressBar()
+        self.progress.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
+        self.progress.setMaximum(maximum)
+        self.progressMessageBar.layout().addWidget(self.progress)
+        self.iface.messageBar().pushWidget(self.progressMessageBar, Qgis.Info)
+        QCoreApplication.processEvents()
+        time.sleep(0.02)
+        return self.progress
+
+    def hideProgressBar(self):
+        self.iface.messageBar().clearWidgets()
 
 
     #********************************************************************************

@@ -528,6 +528,10 @@ class PlottingTool:
         if polygonLayer:
             wdg.plotCanvas.addNewLayer(polygonLayer.id())
 
+        modelLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef)
+        if modelLayer:
+            wdg.plotCanvas.addNewLayer(modelLayer.id())
+
         lineLayer = self.getOrCreateCutLayer(wdg, PlottingTool.WellsLayerName, PlottingTool.WellsLayerDef, 0)
         if lineLayer:
             wdg.plotCanvas.addNewLayer(lineLayer.id())
@@ -733,27 +737,61 @@ class PlottingTool:
 
         wdg.plotCanvas.addNewLayer(polyLayer.id())
 
-    def attachModel(self, wdg, polygons, model1, xyAspect):
+    def attachModel(self, wdg, polygons, values, model1, xyAspect):
         polyLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef, 1)
 
-        aspect = 1.0 / xyAspect
         extent = wdg.plotCanvas.getExtent()
         topY = extent.yMaximum()
 
+        valueMin = 0.0
+        valueMax = 0.0
         with edit(polyLayer):
             for feat in polyLayer.getFeatures():
                 polyLayer.deleteFeature(feat.id())
 
             fields = polyLayer.fields()
             zoneColors = {}
-            for poly in polygons:
+            for i in range(len(polygons)):
+                poly = polygons[i]
                 polyline = [QgsPointXY(pt[0], pt[1]*-1.0) for pt in poly]
                 f = QgsFeature(fields)
                 f.setGeometry(QgsGeometry.fromPolygonXY([polyline]))
-                f.setAttribute('value', 0)
+                f.setAttribute('value', float(values[i]))
+                if i == 0:
+                    valueMin = values[i]
+                    valueMax = values[i]
+                else:
+                    valueMin = min(valueMin, values[i])
+                    valueMax = max(valueMax, values[i])
                 polyLayer.addFeatures([f])
 
         polyLayer.removeSelection()
+
+        myStyle = QgsStyle().defaultStyle()
+        ramp = myStyle.colorRamp('Spectral')
+
+        intervals = QgsGraduatedSymbolRenderer.calcEqualIntervalBreaks(valueMin, valueMax, 10, False, 0, False)
+        count = len(intervals)
+        num = 0.0
+        myRangeList = []
+        minVal = valueMin
+        for maxVal in intervals:
+            mySymbol1 = QgsSymbol.defaultSymbol(polyLayer.geometryType())
+            clr = ramp.color(num / count)
+            lay = mySymbol1.symbolLayer(0)
+            lay.setFillColor(clr)
+            lay.setStrokeColor(clr)
+            # mySymbol1.setColor(clr)
+
+            myRange1 = QgsRendererRange(minVal, maxVal, mySymbol1, '{0:.2f}-{1:.2f}'.format(minVal, maxVal))
+            myRangeList.append(myRange1)
+            num += 1.0
+            minVal = maxVal
+
+        myRenderer = QgsGraduatedSymbolRenderer('', myRangeList)
+        myRenderer.setMode(QgsGraduatedSymbolRenderer.EqualInterval)
+        myRenderer.setClassAttribute('value')
+        polyLayer.setRenderer(myRenderer)
 
         wdg.plotCanvas.addNewLayer(polyLayer.id())
 

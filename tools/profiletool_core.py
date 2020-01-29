@@ -273,7 +273,6 @@ class ProfileToolCore(QWidget):
     def updateModel(self):
         if not self.dockwidget.showModel:
             return
-        print('update model')
 
         dbReader = ModelDbReader(self.iface, self)
         grid = dbReader.readModel(self.dockwidget.currentModelNumber)
@@ -282,8 +281,10 @@ class ProfileToolCore(QWidget):
             return
 
         dbReader.readPropertyCube(grid, self.dockwidget.currentProperty)
-        points = self.createModelCut(grid)
-        PlottingTool().attachModel(self.dockwidget, points, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+        self.dockwidget.showProgressBar(self.tr('Разрез по модели'), 100)
+        points, values = self.createModelCut(grid)
+        PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+        self.dockwidget.hideProgressBar()
 
     def createModelCut(self, grid):
         shapely_line = shapely.geometry.LineString(self.pointstoDraw)
@@ -334,7 +335,14 @@ class ProfileToolCore(QWidget):
                 if intGeom and len(intGeom.coords) > 1:
                     cells.append((i, j))
 
+        istart = grid.nCellsX * grid.nCellsY
+        useCube = grid.cube is not None and len(grid.cube) > istart
+
+        progressStep = 100.0 / (len(cells)+1)
+
         points = []
+        values = []
+        cellIdx = 0
         for c in cells:
             i = c[0]
             j = c[1]
@@ -346,6 +354,13 @@ class ProfileToolCore(QWidget):
                 #Left triangle
                 shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3)])
                 intGeom = shapely_poly.intersection(shapely_line)
+
+                curValue = SIM_INDT
+                try:
+                    if useCube:
+                        curValue = grid.cube[istart + (j - 1) * grid.nCellsX + i - 1]
+                except:
+                    pass
 
                 pointsSeg = []
                 if intGeom and len(intGeom.coords) > 1:
@@ -368,9 +383,14 @@ class ProfileToolCore(QWidget):
                     tmpList = list(pointsSeg)
                     tmpList.extend(prevPointSeg)
                     points.append(tmpList)
+                    values.append(curValue)
                 prevPointSeg = list(reversed(pointsSeg))
 
-        return points
+            cellIdx += 1
+            self.dockwidget.progress.setValue(float(cellIdx*progressStep))
+            QCoreApplication.processEvents()
+
+        return points, values
 
 
     def updateWells(self):
