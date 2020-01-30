@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>844</width>
-    <height>437</height>
+    <height>487</height>
    </rect>
   </property>
   <property name="locale">
@@ -445,7 +445,7 @@
              <x>0</x>
              <y>0</y>
              <width>800</width>
-             <height>351</height>
+             <height>401</height>
             </rect>
            </property>
           </widget>
@@ -466,12 +466,56 @@
           <property name="checkable">
            <bool>true</bool>
           </property>
-          <layout class="QGridLayout" name="gridLayout_4">
+          <layout class="QGridLayout" name="mShowModelGridLayout">
+           <item row="0" column="1">
+            <widget class="QListWidget" name="propertyListWidget"/>
+           </item>
            <item row="0" column="0">
             <widget class="QListWidget" name="modelListWidget"/>
            </item>
-           <item row="0" column="1">
-            <widget class="QListWidget" name="propertyListWidget"/>
+           <item row="1" column="0" colspan="2">
+            <widget class="QFrame" name="mRampFrame">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="mRampLayout1" stretch="0,0">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Градиент</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QgsColorRampButton" name="mColorRamp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -666,6 +710,14 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsColorRampButton</class>
+   <extends>QToolButton</extends>
+   <header>qgscolorrampbutton.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

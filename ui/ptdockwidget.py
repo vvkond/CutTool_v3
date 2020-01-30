@@ -154,6 +154,10 @@ class PTDockWidget(QDockWidget, FormClass):
         self.mdl.setHorizontalHeaderLabels(["","",self.tr("Layer"), self.tr("Band/Field"), self.tr("Search buffer")])
         self.tableViewTool = TableViewTool()
 
+        # self.mColorRamp = QgsColorRampButton(self.mShowModel)
+        # self.mRampLayout.addWidget(self.mColorRamp)
+        # self.mColorRamp.setColorRampFromName('Spectral')
+
         #other
         self.addOptionComboboxItems()
         self.selectionmethod = 0
@@ -354,6 +358,10 @@ class PTDockWidget(QDockWidget, FormClass):
             key = self.propertyListWidget.currentItem().text()
             return self.simLinks[key]
         return self.simLinks[PORO]
+
+    @property
+    def colorRamp(self):
+        return self.mColorRamp.colorRamp()
 
     def showProgressBar(self,msg,maximum):
         self.iface.messageBar().clearWidgets()

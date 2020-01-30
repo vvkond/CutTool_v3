@@ -43,6 +43,7 @@ from math import sqrt
 import numpy as np
 import ast
 import shapely
+import datetime
 # plugin import
 from .dataReaderTool import DataReaderTool
 from .plottingtool import PlottingTool
@@ -281,10 +282,17 @@ class ProfileToolCore(QWidget):
             return
 
         dbReader.readPropertyCube(grid, self.dockwidget.currentProperty)
-        self.dockwidget.showProgressBar(self.tr('Разрез по модели'), 100)
+        self.dockwidget.showProgressBar(self.tr('Создание разреза по модели'), 100)
+
+        t = datetime.datetime.now()
         points, values = self.createModelCut(grid)
-        PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+        c = datetime.datetime.now() - t
+        print('Create model cut time:', c.seconds, c.microseconds)
         self.dockwidget.hideProgressBar()
+        PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+        t = datetime.datetime.now()
+        c = datetime.datetime.now() - t
+        print('Create layer time:', c.seconds, c.microseconds)
 
     def createModelCut(self, grid):
         shapely_line = shapely.geometry.LineString(self.pointstoDraw)
@@ -327,6 +335,7 @@ class ProfileToolCore(QWidget):
         # Find cells of first layer that have intersections
         k = 1
         cells = []
+
         for i in range(1, grid.nCellsX):
             for j in range(1, grid.nCellsY):
                 x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon(i, j, k)
@@ -337,11 +346,14 @@ class ProfileToolCore(QWidget):
 
         istart = grid.nCellsX * grid.nCellsY
         useCube = grid.cube is not None and len(grid.cube) > istart
+        if len(cells) < 1:
+            return None, None
 
-        progressStep = 100.0 / (len(cells)+1)
+        progressStep = 100.0 / len(cells)
 
         points = []
         values = []
+
         cellIdx = 0
         for c in cells:
             i = c[0]
@@ -848,6 +860,9 @@ class ProfileToolCore(QWidget):
         proj.writeEntry("CutPlugin", "currentTemplateId", self.dockwidget.currentTemplateId)
         proj.writeEntry("CutPlugin", "isDefaultTrackWidth", 'True' if self.dockwidget.isDefaultTrackWidth else 'False')
         proj.writeEntry("CutPlugin", "trackWidth", self.dockwidget.trackWidth)
+        if self.dockwidget.mColorRamp.colorRamp():
+            props = self.dockwidget.mColorRamp.colorRamp().properties()
+            proj.writeEntry("CutPlugin", "colorRamp", str(props))
         if self.dockwidget.modelListWidget.currentItem():
             model_no = self.dockwidget.modelListWidget.currentItem().data(Qt.UserRole)
             proj.writeEntry("CutPlugin", "model_no", model_no)
@@ -890,6 +905,12 @@ class ProfileToolCore(QWidget):
         self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[
                                                   0] == 'True'
         self.dockwidget.trackWidth = int(proj.readEntry("CutPlugin", "trackWidth", '10')[0])
+        propsStr = proj.readEntry("CutPlugin", "colorRamp", "'color1': '202,0,32,255', "
+                                                             "'color2': '64,64,64,255', "
+                                                             "'discrete': '0', "
+                                                             "'rampType': 'gradient', "
+                                                             "'stops': '0.25;244,165,130,255:0.5;255,255,255,255:0.75;186,186,186,255'")[0]
+        self.dockwidget.mColorRamp.setColorRamp(QgsGradientColorRamp.create(ast.literal_eval(propsStr)))
 
         try:
             model_no = int(proj.readEntry("CutPlugin", "model_no", '0')[0])

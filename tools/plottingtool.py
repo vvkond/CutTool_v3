@@ -743,15 +743,25 @@ class PlottingTool:
         extent = wdg.plotCanvas.getExtent()
         topY = extent.yMaximum()
 
+        if len(polygons) < 2:
+            return
+
+        wdg.showProgressBar('Запись слоя разреза по модели', 100)
+        progressStep = 100.0 /len(polygons)
+
         valueMin = 0.0
         valueMax = 0.0
         with edit(polyLayer):
+            polyLayer.blockSignals(True)
             for feat in polyLayer.getFeatures():
                 polyLayer.deleteFeature(feat.id())
 
             fields = polyLayer.fields()
             zoneColors = {}
             for i in range(len(polygons)):
+                wdg.progress.setValue(float(i * progressStep))
+                QCoreApplication.processEvents()
+
                 poly = polygons[i]
                 polyline = [QgsPointXY(pt[0], pt[1]*-1.0) for pt in poly]
                 f = QgsFeature(fields)
@@ -764,13 +774,18 @@ class PlottingTool:
                     valueMin = min(valueMin, values[i])
                     valueMax = max(valueMax, values[i])
                 polyLayer.addFeatures([f])
+            polyLayer.blockSignals(False)
 
         polyLayer.removeSelection()
 
         myStyle = QgsStyle().defaultStyle()
-        ramp = myStyle.colorRamp('Spectral')
+        ramp = wdg.colorRamp
+        if not ramp:
+            QgsMessageLog.logMessage('Use default color ramp', "CutTool", Qgis.Critical)
+            ramp = myStyle.colorRamp('Spectral')
 
-        intervals = QgsGraduatedSymbolRenderer.calcEqualIntervalBreaks(valueMin, valueMax, 10, False, 0, False)
+        intervalCount = 10
+        intervals = QgsGraduatedSymbolRenderer.calcEqualIntervalBreaks(valueMin, valueMax, intervalCount, False, 0, False)
         count = len(intervals)
         num = 0.0
         myRangeList = []
@@ -781,7 +796,6 @@ class PlottingTool:
             lay = mySymbol1.symbolLayer(0)
             lay.setFillColor(clr)
             lay.setStrokeColor(clr)
-            # mySymbol1.setColor(clr)
 
             myRange1 = QgsRendererRange(minVal, maxVal, mySymbol1, '{0:.2f}-{1:.2f}'.format(minVal, maxVal))
             myRangeList.append(myRange1)
@@ -794,6 +808,8 @@ class PlottingTool:
         polyLayer.setRenderer(myRenderer)
 
         wdg.plotCanvas.addNewLayer(polyLayer.id())
+
+        wdg.hideProgressBar()
 
 
     def findMin(self, values):
