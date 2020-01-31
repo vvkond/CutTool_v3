@@ -269,7 +269,7 @@ class ProfileToolCore(QWidget):
         self.enableMouseCoordonates()
 
     def updateModel(self):
-        if not self.dockwidget.showModel:
+        if not self.dockwidget.showModel or self.dockwidget.currentModelNumber < 0:
             return
 
         dbReader = ModelDbReader(self.iface, self)
@@ -284,12 +284,12 @@ class ProfileToolCore(QWidget):
         t = datetime.datetime.now()
         points, values = self.createModelCut(grid)
         c = datetime.datetime.now() - t
-        print('Create model cut time:', c.seconds, c.microseconds)
+        # print('Create model cut time:', c.seconds, c.microseconds)
         self.dockwidget.hideProgressBar()
         PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
         t = datetime.datetime.now()
         c = datetime.datetime.now() - t
-        print('Create layer time:', c.seconds, c.microseconds)
+        # print('Create layer time:', c.seconds, c.microseconds)
 
     def createModelCut(self, grid):
         shapely_line = shapely.geometry.LineString(self.pointstoDraw)
