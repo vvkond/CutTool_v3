@@ -154,10 +154,6 @@ class PTDockWidget(QDockWidget, FormClass):
         self.mdl.setHorizontalHeaderLabels(["","",self.tr("Layer"), self.tr("Band/Field"), self.tr("Search buffer")])
         self.tableViewTool = TableViewTool()
 
-        # self.mColorRamp = QgsColorRampButton(self.mShowModel)
-        # self.mRampLayout.addWidget(self.mColorRamp)
-        # self.mColorRamp.setColorRampFromName('Spectral')
-
         #other
         self.addOptionComboboxItems()
         self.selectionmethod = 0
@@ -346,6 +342,9 @@ class PTDockWidget(QDockWidget, FormClass):
     def showModel(self):
         return self.mShowModel.isChecked()
 
+    def setShowModel(self, isShow):
+        return self.mShowModel.setChecked(isShow)
+
     @property
     def currentModelNumber(self):
         if self.modelListWidget.currentItem() is not None:
@@ -439,9 +438,7 @@ class PTDockWidget(QDockWidget, FormClass):
 
     @pyqtSlot(bool)
     def on_mShowModel_toggled(self, val):
-        if val:
-            self.profiletoolcore.updateModel()
-        else:
+        if not val:
             self.plotCanvas.delLayerByName(PlottingTool.ModelLayerName)
 
     def on_modelListWidget_currentItemChanged(self, current, previous):
@@ -475,8 +472,10 @@ class PTDockWidget(QDockWidget, FormClass):
             if self.isProjectChanged():
                 self.fillTemplateList()
             self.refreshPlot()
-            self.profiletoolcore.updateModel()
             self.profiletoolcore.updateWells()
+            self.profiletoolcore.updateModel()
+            self.profiletoolcore.updateDecorations()
+
 
 
     def blockAllSignals(self, val):

@@ -147,15 +147,17 @@ class ProfiletoolMapToolRenderer():
             #launch analyses
             self.iface.mainWindow().statusBar().showMessage(str(self.pointstoDraw))
             self.profiletool.updateProfil(self.pointstoDraw)
-            #VK
-            self.profiletool.updateModel()
-            self.profiletool.updateWells()
 
             #Reset
             self.pointstoDraw = []
             #temp point to distinct leftclick and dbleclick
             self.dblclktemp = newPoints
             self.iface.mainWindow().statusBar().showMessage(self.textquit0)
+
+            # VK
+            self.profiletool.updateWells()
+            self.profiletool.updateModel()
+            self.profiletool.updateDecorations()
         if self.selectionmethod in (1, 2):
             return
 
@@ -239,6 +241,8 @@ class ProfiletoolMapTool(QgsMapTool):
     def canvasReleaseEvent(self,event):
         if event.button() == Qt.RightButton:
             self.rightClicked.emit({'x': event.pos().x(), 'y': event.pos().y()})
+        elif event.modifiers() == Qt.ControlModifier:
+            self.doubleClicked.emit({'x': event.pos().x(), 'y': event.pos().y()})
         else:
             self.leftClicked.emit( {'x': event.pos().x(), 'y': event.pos().y()} )
 

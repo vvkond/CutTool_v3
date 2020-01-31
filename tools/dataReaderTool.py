@@ -269,10 +269,6 @@ class DataReaderTool:
 
         return profile, buffergeom, multipoly
 
-    def simModelReaderTool(self, iface, wdg, pointstoDraw):
-        modelReader = ModelDbReader(iface)
-        modelReader.readModel(wdg.currentModelNumber)
-
 
     def removeDuplicateLenght(self,projectedpoints):
 

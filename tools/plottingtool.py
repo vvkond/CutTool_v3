@@ -528,10 +528,6 @@ class PlottingTool:
         if polygonLayer:
             wdg.plotCanvas.addNewLayer(polygonLayer.id())
 
-        modelLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef)
-        if modelLayer:
-            wdg.plotCanvas.addNewLayer(modelLayer.id())
-
         lineLayer = self.getOrCreateCutLayer(wdg, PlottingTool.WellsLayerName, PlottingTool.WellsLayerDef, 0)
         if lineLayer:
             wdg.plotCanvas.addNewLayer(lineLayer.id())
@@ -547,6 +543,10 @@ class PlottingTool:
         polyLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ZoneLayerName, PlottingTool.ZoneLayerDef, 1)
         if polyLayer:
             wdg.plotCanvas.addNewLayer(polyLayer.id())
+
+        modelLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef)
+        if modelLayer and wdg.showModel:
+            wdg.plotCanvas.addNewLayer(modelLayer.id())
 
 
     def attachCurves(self, wdg, profiles, model1, library, xyAspect):
@@ -615,7 +615,7 @@ class PlottingTool:
         wdg.plotCanvas.addNewLayer(lineLayer.id(), False)
         decorLayer.removeSelection()
 
-        self.updateDecorations(wdg)
+        # self.updateDecorations(wdg)
 
     def clearLogLayer(self, wdg):
         lineLayer = self.getOrCreateCutLayer(wdg, PlottingTool.LogLineLayerName, PlottingTool.LogLineLayerDef, 0)
@@ -738,7 +738,7 @@ class PlottingTool:
         wdg.plotCanvas.addNewLayer(polyLayer.id())
 
     def attachModel(self, wdg, polygons, values, model1, xyAspect):
-        polyLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef, 1)
+        polyLayer = self.getOrCreateCutLayer(wdg, PlottingTool.ModelLayerName, PlottingTool.ModelLayerDef)
 
         extent = wdg.plotCanvas.getExtent()
         topY = extent.yMaximum()

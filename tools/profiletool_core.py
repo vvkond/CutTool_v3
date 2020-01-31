@@ -247,9 +247,6 @@ class ProfileToolCore(QWidget):
                 geoms.append(buffer)
                 geoms.append(multipoly)
 
-        if self.dockwidget.showModel:
-            DataReaderTool().simModelReaderTool(self.iface, self.dockwidget, self.pointstoDraw)
-
         self.toolrenderer.setBufferGeometry(geoms)
 
         # Update coordinates to use in plot (height, slope %...)
@@ -439,6 +436,9 @@ class ProfileToolCore(QWidget):
                 PlottingTool().clearLogLayer(self.dockwidget)
                 self.iface.messageBar().pushMessage(self.tr(u"Geology cut"), u'Скважины не найдены, убедитесь в правильности выбора проекта',
                                                     level=Qgis.Critical, duration=10)
+
+    def updateDecorations(self):
+        PlottingTool().updateDecorations(self.dockwidget)
 
     def redrawLogs(self, templateId):
         self.updateLogs(templateId)
@@ -862,13 +862,14 @@ class ProfileToolCore(QWidget):
         proj.writeEntry("CutPlugin", "trackWidth", self.dockwidget.trackWidth)
         if self.dockwidget.mColorRamp.colorRamp():
             props = self.dockwidget.mColorRamp.colorRamp().properties()
-            proj.writeEntry("CutPlugin", "colorRamp", str(props))
+            proj.writeEntry("CutPlugin", "colorRamp1", str(props))
         if self.dockwidget.modelListWidget.currentItem():
             model_no = self.dockwidget.modelListWidget.currentItem().data(Qt.UserRole)
             proj.writeEntry("CutPlugin", "model_no", model_no)
         if self.dockwidget.propertyListWidget.currentItem():
             key = self.dockwidget.propertyListWidget.currentItem().text()
             proj.writeEntry("CutPlugin", "property_key", key)
+        proj.writeEntry("CutPlugin", "isShowModel", 'True' if self.dockwidget.showModel else 'False')
 
     def symbolToString(self, symbol):
         if not symbol:
@@ -902,14 +903,14 @@ class ProfileToolCore(QWidget):
         self.dockwidget.wellBottomDepthEdit.setValue(
             float(proj.readEntry("CutPlugin", "wellBottomDepth", '-9999')[0]))
         self.dockwidget.currentTemplateId = int(proj.readEntry("CutPlugin", "currentTemplateId", "-1")[0])
-        self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[
-                                                  0] == 'True'
+        self.dockwidget.isDefaultTrackWidth = proj.readEntry("CutPlugin", "isDefaultTrackWidth", 'True')[0] == 'True'
         self.dockwidget.trackWidth = int(proj.readEntry("CutPlugin", "trackWidth", '10')[0])
-        propsStr = proj.readEntry("CutPlugin", "colorRamp", "'color1': '202,0,32,255', "
+        self.dockwidget.setShowModel(proj.readEntry("CutPlugin", "isShowModel", 'True')[0] == 'True')
+        propsStr = proj.readEntry("CutPlugin", "colorRamp1", "{'color1': '202,0,32,255', "
                                                              "'color2': '64,64,64,255', "
                                                              "'discrete': '0', "
                                                              "'rampType': 'gradient', "
-                                                             "'stops': '0.25;244,165,130,255:0.5;255,255,255,255:0.75;186,186,186,255'")[0]
+                                                             "'stops': '0.25;244,165,130,255:0.5;255,255,255,255:0.75;186,186,186,255'}")[0]
         self.dockwidget.mColorRamp.setColorRamp(QgsGradientColorRamp.create(ast.literal_eval(propsStr)))
 
         try:
