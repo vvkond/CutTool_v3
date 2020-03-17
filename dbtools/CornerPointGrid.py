@@ -8,6 +8,7 @@ class CornerPointGrid:
         self.nCellsX = nCellsX
         self.nCellsY = nCellsY
         self.nCellsZ = nCellsZ
+        self.offset = 2 * (self.nCellsX + 1) * (self.nCellsY + 1) #+ 1
         self.runSld = 0
         self.model_no = model_no
         self.layerName = 'unknown'
@@ -18,15 +19,16 @@ class CornerPointGrid:
         self.activeCells = None
 
     def getCornerCoordinates(self, i, j, k, di, dj, dk):
-        x1 = self.XCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)]
-        y1 = self.YCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)]
-        z1 = self.ZCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)]
-        x2 = self.XCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)+1]
-        y2 = self.YCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)+1]
-        z2 = self.ZCoordLine[2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)+1]
+        index = 2*(i+di-1)+2*(self.nCellsX+1)*(j+dj-1)
+        index1 = index + 1
+        x1 = self.XCoordLine[index]
+        y1 = self.YCoordLine[index]
+        z1 = self.ZCoordLine[index]
+        x2 = self.XCoordLine[index1]
+        y2 = self.YCoordLine[index1]
+        z2 = self.ZCoordLine[index1]
 
-        offset = 2 * (self.nCellsX + 1) * (self.nCellsY + 1) + 1
-        z = self.ZCoordLine[offset + 2 * (i - 1) + 4 * self.nCellsX * (j - 1) +
+        z = self.ZCoordLine[self.offset + 2 * (i - 1) + 4 * self.nCellsX * (j - 1) +
                             8 * self.nCellsX * self.nCellsY * (k - 1) +
                             4 * self.nCellsX * self.nCellsY * dk +
                             2 * self.nCellsX * dj + di]
@@ -48,6 +50,18 @@ class CornerPointGrid:
     def getCornerZ(self, i, j, k, di, dj, dk):
         x,y,z = self.getCornerCoordinates(i,j,k,di,dj,dk)
         return z
+
+    def getLeftBackUpperCorner(self, i, j, k):
+        return self.getCornerCoordinates(i, j, k, 0, 0, 0)
+
+    def getRightBackUpperCorner(self, i, j, k):
+        return self.getCornerCoordinates(i, j, k, 1, 0, 0)
+
+    def getLeftFrontUpperCorner(self, i, j, k):
+        return self.getCornerCoordinates(i, j, k, 0, 1, 0)
+
+    def getRightFrontUpperCorner(self, i, j, k):
+        return self.getCornerCoordinates(i, j, k, 1, 1, 0)
 
     def getLeftBackUpperCornerX(self, i, j, k):
         return self.getCornerX(i, j, k, 0, 0, 0)
@@ -137,5 +151,13 @@ class CornerPointGrid:
         x4 = self.getLeftFrontUpperCornerX(i, j, layer)
         y4 = self.getLeftFrontUpperCornerY(i, j, layer)
         z4 = self.getLeftFrontUpperCornerZ(i, j, layer)
+
+        return (x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4)
+
+    def getPolygon1(self, i, j, layer):
+        x1, y1, z1 = self.getLeftBackUpperCorner(i, j, layer)
+        x2, y2, z2 = self.getRightBackUpperCorner(i, j, layer)
+        x3, y3, z3 = self.getRightFrontUpperCorner(i, j, layer)
+        x4, y4, z4 = self.getLeftFrontUpperCorner(i, j, layer)
 
         return (x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4)

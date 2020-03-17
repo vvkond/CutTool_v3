@@ -63,9 +63,9 @@ class ProfiletoolMapToolRenderer():
         self.rubberbandbuf.setWidth(1)
         self.rubberbandbuf.setColor(QColor(Qt.blue))
 
-        self.textquit0 = "Click for polyline and double click to end (right click to cancel then quit)"
-        self.textquit1 = "Select the polyline feature in a vector layer (Right click to quit)"
-        self.textquit2 = "Select the polyline vector layer (Right click to quit)"
+        self.textquit0 = "Левая клавиши для создания профиля, Ctrl+левая клавиша (или двойной щелчек) для завершения. (правая клавиша для отмены и выхода)"
+        self.textquit1 = "Выберите полилинию в векторном слое (правая клавиша для отмены и выхода)"
+        self.textquit2 = "Выберите слой полилиний (правая клавиша для отмены и выхода)"
 
         self.setSelectionMethod(0)
 

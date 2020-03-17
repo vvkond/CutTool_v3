@@ -283,12 +283,13 @@ class ProfileToolCore(QWidget):
 
         t = datetime.datetime.now()
         points, values = self.createModelCut(grid)
-        c = datetime.datetime.now() - t
-        # print('Create model cut time:', c.seconds, c.microseconds)
         self.dockwidget.hideProgressBar()
-        PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
-        t = datetime.datetime.now()
-        c = datetime.datetime.now() - t
+        if points and values:
+            c = datetime.datetime.now() - t
+            # print('Create model cut time:', c.seconds, c.microseconds)
+            PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
+            t = datetime.datetime.now()
+            c = datetime.datetime.now() - t
         # print('Create layer time:', c.seconds, c.microseconds)
 
     def createModelCut(self, grid):
@@ -315,9 +316,20 @@ class ProfileToolCore(QWidget):
             len = sqrt(dx*dx + dy*dy)
             return seg_len[vIndex] + len
 
-        # sx1, sy1, sz1, sx2, sy2, sz2, sx3, sy3, sz3, sx4, sy4, sz4 = grid.getPolygon(1, 1, 1)
+        points = []
+        values = []
+
+        # sx1, sy1, sz1, sx2, sy2, sz2, sx3, sy3, sz3, sx4, sy4, sz4 = grid.getPolygon(15, 20, 1)
+        # offset = 2 * (grid.nCellsX + 1) * (grid.nCellsY + 1) + 1
+        # index = offset + 2 * (15 - 1) + 4 * grid.nCellsX * (20 - 1) + 8 * grid.nCellsX * grid.nCellsY * (1 - 1) + 4 * grid.nCellsX * grid.nCellsY * 0 + 2 * grid.nCellsX * 0 + 0
+        # index1 = offset + 2 * (15 - 1) + 4 * grid.nCellsX * (20 - 1) + 8 * grid.nCellsX * grid.nCellsY * (1 - 1) + 4 * grid.nCellsX * grid.nCellsY * 0 + 2 * grid.nCellsX * 0 + 1
+        # print(offset, [grid.ZCoordLine[i] for i in range(offset, offset+10)])
+        #
+        # print((sx1, sy1), (sx2, sy2), (sx3, sy3), (sx4, sy4))
+        # print(sz1, sz2, sz3, sz4)
+        #
+        # sx1, sy1, sz1, sx2, sy2, sz2, sx3, sy3, sz3, sx4, sy4, sz4 = grid.getPolygon(1, 20, 1)
         # j = 20
-        # points = []
         # for i in range(1, grid.nCellsX):
         #     for k in range(1, grid.nCellsZ-1):
         #         pointsSeg = []
@@ -328,75 +340,77 @@ class ProfileToolCore(QWidget):
         #         pointsSeg.append((x2 - sx1, z2))
         #         pointsSeg.append((x1 - sx1, z1))
         #         points.append(pointsSeg)
+        #         values.append(1.0)
+        # return points, values
 
         # Find cells of first layer that have intersections
         k = 1
         cells = []
+        progressStep = 100.0 / grid.nCellsX
 
-        for i in range(1, grid.nCellsX):
-            for j in range(1, grid.nCellsY):
-                x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon(i, j, k)
-                shapely_poly = shapely.geometry.Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
-                intGeom = shapely_poly.intersection(shapely_line)
-                if intGeom and len(intGeom.coords) > 1:
-                    cells.append((i, j))
-
-        istart = grid.nCellsX * grid.nCellsY
-        useCube = grid.cube is not None and len(grid.cube) > istart
-        if len(cells) < 1:
-            return None, None
-
-        progressStep = 100.0 / len(cells)
-
-        points = []
-        values = []
+        # for i in range(1, grid.nCellsX):
+        #     for j in range(1, grid.nCellsY):
+        #         for k in range(1, grid.nCellsZ):
+        #             x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 = grid.getPolygon1(i, j, k)
+        #             shapely_poly = shapely.geometry.Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
+        #             intGeom = shapely_poly.intersection(shapely_line)
+        #             if intGeom and len(intGeom.coords) > 1:
+        #                 cells.append((i, j, k))
+        #
+        #     self.dockwidget.progress.setValue(float(i * progressStep))
+        #     QCoreApplication.processEvents()
+        #
+        # istart = grid.nCellsX * grid.nCellsY
+        # useCube = grid.cube is not None and len(grid.cube) > istart
+        # if len(cells) < 1:
+        #     return None, None
+        #
+        # progressStep = 100.0 / len(cells)
 
         cellIdx = 0
-        for c in cells:
-            i = c[0]
-            j = c[1]
+        for i in range(1, grid.nCellsX):
+            for j in range(1, grid.nCellsY):
+                prevPointSeg = []
+                for k in range(1, grid.nCellsZ):
+                    istart = grid.nCellsX * grid.nCellsY * k
+                    x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4 = grid.getPolygon(i, j, k);
+                    #Left triangle
+                    shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3)])
+                    intGeom = shapely_poly.intersection(shapely_line)
 
-            prevPointSeg = []
-            for k in range(1, grid.nCellsZ):
-                istart = grid.nCellsX * grid.nCellsY * k
-                x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4 = grid.getPolygon(i, j, k);
-                #Left triangle
-                shapely_poly = shapely.geometry.Polygon([(x1,y1), (x2,y2), (x3,y3)])
-                intGeom = shapely_poly.intersection(shapely_line)
+                    curValue = SIM_INDT
+                    try:
+                        if useCube:
+                            curValue = grid.cube[istart + (j - 1) * grid.nCellsX + i - 1]
+                    except:
+                        pass
 
-                curValue = SIM_INDT
-                try:
-                    if useCube:
-                        curValue = grid.cube[istart + (j - 1) * grid.nCellsX + i - 1]
-                except:
-                    pass
+                    pointsSeg = []
+                    if intGeom and len(intGeom.coords) > 1:
+                        for p in intGeom.coords:
+                            x = interpolate(QgsPointXY(p[0], p[1]))*aspect
+                            y = triangle_interpolate_linear((x1,y1, z1), (x2,y2, z2), (x3,y3,z3), p)
+                            pointsSeg.append((x, y))
 
-                pointsSeg = []
-                if intGeom and len(intGeom.coords) > 1:
-                    for p in intGeom.coords:
-                        x = interpolate(QgsPointXY(p[0], p[1]))*aspect
-                        y = triangle_interpolate_linear((x1,y1, z1), (x2,y2, z2), (x3,y3,z3), p)
-                        pointsSeg.append((x, y))
+                    # Right triangle
+                    shapely_poly = shapely.geometry.Polygon([(x1, y1), (x3, y3), (x4, y4)])
+                    intGeom = shapely_poly.intersection(shapely_line)
+                    if intGeom and len(intGeom.coords) > 1:
+                        for p in intGeom.coords:
+                            x = interpolate(QgsPointXY(p[0], p[1])) * aspect
+                            y = triangle_interpolate_linear((x1, y1, z1), (x3, y3, z3), (x4, y4, z4), p)
+                            pointsSeg.append((x, y))
 
-                # Right triangle
-                shapely_poly = shapely.geometry.Polygon([(x1, y1), (x3, y3), (x4, y4)])
-                intGeom = shapely_poly.intersection(shapely_line)
-                if intGeom and len(intGeom.coords) > 1:
-                    for p in intGeom.coords:
-                        x = interpolate(QgsPointXY(p[0], p[1])) * aspect
-                        y = triangle_interpolate_linear((x1, y1, z1), (x3, y3, z3), (x4, y4, z4), p)
-                        pointsSeg.append((x, y))
-
-                pointsSeg = sorted(pointsSeg, key=lambda p: p[0])
-                if k > 1:
-                    tmpList = list(pointsSeg)
-                    tmpList.extend(prevPointSeg)
-                    points.append(tmpList)
-                    values.append(curValue)
-                prevPointSeg = list(reversed(pointsSeg))
+                    pointsSeg = sorted(pointsSeg, key=lambda p: p[0])
+                    if k > 1:
+                        tmpList = list(pointsSeg)
+                        tmpList.extend(prevPointSeg)
+                        points.append(tmpList)
+                        values.append(curValue)
+                    prevPointSeg = list(reversed(pointsSeg))
 
             cellIdx += 1
-            self.dockwidget.progress.setValue(float(cellIdx*progressStep))
+            self.dockwidget.progress.setValue(float(i*progressStep))
             QCoreApplication.processEvents()
 
         return points, values
@@ -682,7 +696,7 @@ class ProfileToolCore(QWidget):
                 if pointprojected:
                     self.toolrenderer.rubberbandpoint.setCenter(pointprojected)
             self.toolrenderer.rubberbandpoint.show()
-        else:
+        elif self.toolrenderer:
             self.toolrenderer.rubberbandpoint.hide()
 
     # remove layers which were removed from QGIS

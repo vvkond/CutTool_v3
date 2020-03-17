@@ -93,6 +93,7 @@ class ModelDbReader(DbReaderBase):
         if records:
             for row in records:
                 grid.cube = numpy.fromstring(self.db.blobToString(row[0]), '>f').astype('d')
-                grid.cubeMin = numpy.amin(grid.cube)
-                grid.cubeMax = numpy.amax(grid.cube)
+                if len(grid.cube) > 0:
+                    grid.cubeMin = numpy.amin(grid.cube)
+                    grid.cubeMax = numpy.amax(grid.cube)
                 break
