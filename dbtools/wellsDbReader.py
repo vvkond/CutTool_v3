@@ -88,9 +88,9 @@ class WellsDbReader(DbReaderBase):
                     polyLine.append(pt3)
 
                 if len(polyLine) > 1:
-                    minDist = min(geominlayercrs.closestSegmentWithContext(QgsPointXY(pt[0], pt[1])) for pt in polyLine)
+                    minDist = min(geominlayercrs.closestSegmentWithContext(QgsPointXY(pt[0], pt[1]))[0] for pt in polyLine)
 
-                    if minDist[0] <= dist:
+                    if minDist <= dist:
                         trajectory = [(interpolate(QgsPointXY(pt[0], pt[1]))*aspect, pt[2], pt[3]) for pt in polyLine if checkPoint(pt[2])]
                         trajectory = self.simplify(trajectory, 0.001)
                         if len(trajectory):

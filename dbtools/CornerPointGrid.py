@@ -11,7 +11,7 @@ import sys
 try:
     if platform.architecture()[0] == "64bit":
         libFolder = path.dirname(path.abspath(__file__))+'\\libs\\x86_64'
-        #libFolder='C:/MyProg/OISTerra_Project/debug/win64'
+        # libFolder='C:/MyProg/OISTerra_Project/release/win64'
     else:
         libFolder = path.dirname(path.abspath(__file__)) + '\\libs\\i386'
 
