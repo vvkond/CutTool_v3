@@ -1,5 +1,30 @@
 # -*- coding: utf-8 -*-
 
+import ctypes
+from ctypes import *
+import platform
+from os import environ,path
+from os.path import abspath
+import numpy as np
+import sys
+
+try:
+    if platform.architecture()[0] == "64bit":
+        libFolder = path.dirname(path.abspath(__file__))+'\\libs\\x86_64'
+        #libFolder='C:/MyProg/OISTerra_Project/debug/win64'
+    else:
+        libFolder = path.dirname(path.abspath(__file__)) + '\\libs\\i386'
+
+    cdll.LoadLibrary(libFolder + '\\DataCore.dll')
+    cdll.LoadLibrary(libFolder + '\\MathCore.dll')
+    cutDll = cdll.LoadLibrary(libFolder + '\\QgisCrossSection.dll')
+    print('QgisCrossSection.dll loaded')
+except Exception as e:
+    print(libFolder+'\\QgisCrossSection.dll load error', str(e))
+
+CMPFUNC = CFUNCTYPE(c_int, c_int, c_int, c_int, c_int, POINTER(c_double))
+SIM_INDT = -999
+
 class CornerPointGrid:
     def __init__(self, model_no, nCellsX, nCellsY, nCellsZ):
         self.XCoordLine = None
@@ -161,3 +186,31 @@ class CornerPointGrid:
         x4, y4, z4 = self.getLeftFrontUpperCorner(i, j, layer)
 
         return (x1,y1,z1, x2,y2,z2, x3,y3,z3, x4,y4,z4)
+
+    def py_cmp_func(self, i, j, k, count, b):
+        p = [b[i] for i in range(0,count)]
+        self.points.append([ i for i in zip(p[::2], p[1::2])])
+
+        z = SIM_INDT
+        cellIndex = self.nCellsX * self.nCellsY * k + self.nCellsX * j + i
+        if self.cube is not None and len(self.cube) > cellIndex :
+            z = self.cube[cellIndex]
+        self.values.append(z)
+        return 0
+
+    def createCut(self, profile):
+        npProfile = np.array(profile).flatten()
+
+        callback = CMPFUNC(self.py_cmp_func)
+
+        self.points = []
+        self.values = []
+        cutDll.setModelData(self.XCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            self.YCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            self.ZCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            npProfile.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+                            len(npProfile),
+                            self.nCellsX, self.nCellsY, self.nCellsZ,
+                            callback)
+
+        return self.points, self.values

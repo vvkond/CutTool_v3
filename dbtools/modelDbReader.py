@@ -6,13 +6,11 @@ from qgis.PyQt import QtCore
 #qgis import
 import qgis
 import numpy
-
 from .dbReaderBase import *
 from .CornerPointGrid import *
 
 CORNER_POINT = 2
 FULL_CORNER_POINT = 4
-SIM_INDT = -999
 
 
 class ModelDbReader(DbReaderBase):

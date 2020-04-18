@@ -272,6 +272,7 @@ class ProfileToolCore(QWidget):
         if not self.dockwidget.showModel or self.dockwidget.currentModelNumber < 0:
             return
 
+        self.dockwidget.showProgressBar(self.tr('Чтение модели'), 100)
         dbReader = ModelDbReader(self.iface, self)
         grid = dbReader.readModel(self.dockwidget.currentModelNumber)
         if not grid:
@@ -293,6 +294,8 @@ class ProfileToolCore(QWidget):
         # print('Create layer time:', c.seconds, c.microseconds)
 
     def createModelCut(self, grid):
+        return grid.createCut(self.pointstoDraw)
+
         shapely_line = shapely.geometry.LineString(self.pointstoDraw)
         aspect = 1.0 / self.dockwidget.mXyAspectRatio.value()
 
