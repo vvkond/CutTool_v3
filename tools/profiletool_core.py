@@ -285,13 +285,8 @@ class ProfileToolCore(QWidget):
         t = datetime.datetime.now()
         points, values = self.createModelCut(grid)
         self.dockwidget.hideProgressBar()
-        if points and values:
-            c = datetime.datetime.now() - t
-            # print('Create model cut time:', c.seconds, c.microseconds)
-            PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
-            t = datetime.datetime.now()
-            c = datetime.datetime.now() - t
-        # print('Create layer time:', c.seconds, c.microseconds)
+        # if points and values:
+        PlottingTool().attachModel(self.dockwidget, points, values, self.dockwidget.mdl, self.dockwidget.mXyAspectRatio.value())
 
     def createModelCut(self, grid):
         return grid.createCut(self.pointstoDraw)

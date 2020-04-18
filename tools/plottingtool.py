@@ -743,6 +743,12 @@ class PlottingTool:
         extent = wdg.plotCanvas.getExtent()
         topY = extent.yMaximum()
 
+        with edit(polyLayer):
+            polyLayer.blockSignals(True)
+            for feat in polyLayer.getFeatures():
+                polyLayer.deleteFeature(feat.id())
+            polyLayer.blockSignals(False)
+
         if len(polygons) < 2:
             return
 
