@@ -742,6 +742,7 @@ class PlottingTool:
 
         extent = wdg.plotCanvas.getExtent()
         topY = extent.yMaximum()
+        aspect = 1.0 / xyAspect
 
         with edit(polyLayer):
             polyLayer.blockSignals(True)
@@ -769,7 +770,7 @@ class PlottingTool:
                 QCoreApplication.processEvents()
 
                 poly = polygons[i]
-                polyline = [QgsPointXY(pt[0], pt[1]*-1.0) for pt in poly]
+                polyline = [QgsPointXY(pt[0]*aspect, pt[1]*-1.0) for pt in poly]
                 f = QgsFeature(fields)
                 f.setGeometry(QgsGeometry.fromPolygonXY([polyline]))
                 f.setAttribute('value', float(values[i]))

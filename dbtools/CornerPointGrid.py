@@ -40,6 +40,7 @@ class CornerPointGrid:
         self.cube = None
         self.cubeMin = -999
         self.cubeMax = -999
+        self.GeometryType = 1
 
         self.activeCells = None
 
@@ -205,7 +206,7 @@ class CornerPointGrid:
 
         self.points = []
         self.values = []
-        cutDll.setModelData(self.XCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+        cutDll.setModelData(self.GeometryType, self.XCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             self.YCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             self.ZCoordLine.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
                             npProfile.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -214,3 +215,17 @@ class CornerPointGrid:
                             callback)
 
         return self.points, self.values
+
+class CartesianGrid(CornerPointGrid):
+    def __init__(self,  model_no, nCellsX, nCellsY, nCellsZ):
+        super().__init__(model_no, nCellsX, nCellsY, nCellsZ)
+        self.GeometryType = 0
+
+    def getCornerCoordinates(self, i, j, k, di, dj, dk):
+        nodeIndex = (i+di-1) + (j+dj-1) * (self.nCellsX + 1) + (k+dk-1) * (self.nCellsX + 1) * (self.nCellsY + 1)
+
+        x = self.XCoordLine[nodeIndex]
+        y = self.YCoordLine[nodeIndex]
+        z = self.ZCoordLine[nodeIndex]
+
+        return (x, y, z)
